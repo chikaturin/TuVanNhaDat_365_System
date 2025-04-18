@@ -1,16 +1,17 @@
-import express, { json } from "express";
-import cors from "cors";
-import { config } from "dotenv";
-import bodyParser from "body-parser";
-const jsonParser = bodyParser.json();
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
+const { createServer } = require("http");
+const { json } = require("body-parser");
+// const db = require("./models/db");
+
 const app = express();
-import cookieParser from "cookie-parser";
-import morgan from "morgan";
-import { createServer } from "http";
-// import db from "./models/db.js";
 
 // middleware always put first
 app.use(json());
+app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 
@@ -36,6 +37,7 @@ app.use(
 );
 
 //routers
+app.use("/api", require("./apis/routers/Authens.router"));
 
 // 🔥 Add CORS headers manually in case middleware fails
 app.use((req, res, next) => {
@@ -61,5 +63,3 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Now streaming on http://localhost:${PORT}`);
 });
-
-export default app;

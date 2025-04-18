@@ -1,23 +1,22 @@
 const mongoose = require("mongoose");
-
+//------------------------------------------------------------------
 // Schema cho User
-const userSchema = new mongoose.Schema({
-  // Số điện thoại của User và là duy nhấtnhất
-  PhoneNumber: { type: String, required: true, unique: true },
-  //Email của User
-  Email: { type: String, required: true, unique: true },
-  //Họ của User
-  FirstName: { type: String, required: true },
-  //Tên của User
-  LastName: { type: String, required: true },
-  //Role của User
-  Role: {
-    type: String,
-    required: true,
-    enum: ["Admin", "User", "Staff"],
+const userSchema = new mongoose.Schema(
+  {
+    _id: { type: String, required: true }, // Dùng phone number làm _id
+    Email: { type: String, required: true, unique: true },
+    FirstName: { type: String, required: true },
+    LastName: { type: String, required: true },
+    Role: {
+      type: String,
+      required: true,
+      enum: ["Admin", "User", "Staff"],
+    },
   },
-});
+  { _id: false }
+);
 
+//------------------------------------------------------------------
 //Schema cho Category
 const CategorySchema = new mongoose.Schema({
   //Tên của Category
@@ -32,6 +31,7 @@ const CategorySchema = new mongoose.Schema({
   },
 });
 
+//------------------------------------------------------------------
 // Schema cho Property
 const propertySchema = new mongoose.Schema({
   //Tiêu đề của Property
@@ -95,15 +95,14 @@ const propertySchema = new mongoose.Schema({
   },
   // Liên kết đến bảng State
   State: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "State",
+    type: String,
     required: true,
+    enum: ["Cho thuê", "Đã thuê", "Bán", "Đã bán"],
   },
-  // Liên kết đến bảng Type
-  Type: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Type",
-    required: true,
+  // Trạng thái hiển thị phần duyệt bài
+  Approved: {
+    type: Boolean,
+    default: false,
   },
   // Liên kết đến bảng Location
   Location: {
@@ -121,38 +120,25 @@ const propertySchema = new mongoose.Schema({
   ],
 });
 
-//Schema cho State
-const stateSchema = new mongoose.Schema({
-  // Tên của State
-  Name: {
-    type: String,
-    required: true,
-  },
-  // Mô tả của State
-  Description: {
-    type: String,
-    required: true,
-  },
-});
-
-//Schema cho Type
-const typeSchema = new mongoose.Schema({
-  // Tên của Type
-  Name: {
-    type: String,
-    required: true,
-  },
-  // Mô tả của Type
-  Description: {
-    type: String,
-    required: true,
-  },
-  //Approved hay chưa
-  Approved: {
-    type: Boolean,
-    default: false,
-  },
-});
+// //------------------------------------------------------------------
+// //Schema cho Type
+// const typeSchema = new mongoose.Schema({
+//   // Tên của Type
+//   Name: {
+//     type: String,
+//     required: true,
+//   },
+//   // Mô tả của Type
+//   Description: {
+//     type: String,
+//     required: true,
+//   },
+//   //Approved hay chưa
+//   Approved: {
+//     type: Boolean,
+//     default: false,
+//   },
+// });
 
 //Schema cho Location
 const locationSchema = new mongoose.Schema({
@@ -168,6 +154,7 @@ const locationSchema = new mongoose.Schema({
   },
 });
 
+//------------------------------------------------------------------
 //Schema cho Amenities
 const AmenitiesSchema = new mongoose.Schema({
   // Tên của Amenities
@@ -188,6 +175,7 @@ const AmenitiesSchema = new mongoose.Schema({
   },
 });
 
+//------------------------------------------------------------------
 //Schema cho Image
 const propertyImageSchema = new mongoose.Schema({
   //Lưu ảnh bằng buffer
@@ -205,6 +193,7 @@ const propertyImageSchema = new mongoose.Schema({
   },
 });
 
+//------------------------------------------------------------------
 //Schema cho Notification
 const notificationSchema = new mongoose.Schema({
   //Title của Notification
@@ -218,3 +207,18 @@ const notificationSchema = new mongoose.Schema({
     required: true,
   },
 });
+
+//------------------------------------------------------------------
+//Model
+const UserSchema = mongoose.model("Account", userSchema);
+const PropertySchema = mongoose.model("Property", propertySchema);
+const PropertyImageSchema = mongoose.model(
+  "PropertyImage",
+  propertyImageSchema
+);
+
+module.exports = {
+  User: UserSchema,
+  Property: PropertySchema,
+  PropertyImage: PropertyImageSchema,
+};
