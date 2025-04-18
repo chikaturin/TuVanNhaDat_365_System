@@ -4,7 +4,7 @@
 
 ## 🚀 Mô tả
 
-Hệ thống backend xây dựng với Node.js và Express, cung cấp API cho các chức năng như:
+Hệ thống frontend và backend xây dựng với React.js, Node.js và Express, cung cấp API cho các chức năng như:
 
 - Đăng ký/đăng nhập người dùng
 - Quản lý bất động sản
@@ -12,6 +12,7 @@ Hệ thống backend xây dựng với Node.js và Express, cung cấp API cho c
 
 ## 📦 Công nghệ sử dụng
 
+- React.js
 - Node.js
 - Express.js
 - MongoDB & Mongoose
@@ -30,9 +31,18 @@ Hệ thống backend xây dựng với Node.js và Express, cung cấp API cho c
 git clone https://github.com/chikaturin/TuVanNhaDat_365_System.git
 cd TuVanNhaDat_365_System
 
-# Cài đặt dependencies
+# Cài đặt dependencies của Client
+cd Client
 npm install
 
 # Tạo file .env và thêm biến môi trường
+touch .env
+
+# Cài đặt dependencies của Server
+cd ..
+cd Server
+npm install
+
+# Tạo file .env và thêm biến môi trường server
 touch .env
 ```
