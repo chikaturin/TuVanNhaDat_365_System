@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const { User } = require("../../models/schema");
+const ExcelJS = require("exceljs");
 dotenv.config();
 
 const register = async (req, res) => {
@@ -118,11 +119,50 @@ const search_User = async (req, res) => {
 
 //Xuất danh sách người dùng
 const exportUser = async (req, res) => {
-  const user = await User.find();
-  if (!user) {
-    res.status(400).json({ message: "Lỗi không tìm thấy dữ liệu" });
+  try {
+    const users = await User.findOne({ Role: "User" });
+
+    if (!users || users.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Không có người dùng nào để xuất" });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Danh sách người dùng");
+
+    worksheet.columns = [
+      { header: "STT", key: "index", width: 10 },
+      { header: "Họ", key: "lastName", width: 30 },
+      { header: "Tên", key: "firstName", width: 30 },
+      { header: "Email", key: "email", width: 30 },
+      { header: "Số điện thoại", key: "phone", width: 20 },
+    ];
+
+    users.forEach((user, index) => {
+      worksheet.addRow({
+        index: index + 1,
+        lastName: user.LastName,
+        firstName: user.FirstName,
+        email: user.Email,
+        phone: user._id,
+      });
+    });
+
+    // Set header để download file
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", "attachment; filename=users.xlsx");
+
+    // Ghi file vào response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Lỗi xuất file:", error);
+    res.status(500).json({ message: "Lỗi server", error });
   }
-  res.status(201).json({ message: "Get user success", user });
 };
 
 //Phần quyền staff
