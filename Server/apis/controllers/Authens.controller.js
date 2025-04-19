@@ -89,4 +89,72 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, registerStaff, login };
+//Danh sách người dùng
+const listUser = async (req, res) => {
+  try {
+    const user = await User.find();
+    if (!user) {
+      res.status(400).json({ message: "Lỗi không tìm thấy dữ liệu" });
+    }
+    res.status(201).json({ message: "Get user success", user });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//Tìm kiếm user
+const search_User = async (req, res) => {
+  try {
+    const { phone } = req.params;
+    const user = await User.findById(phone);
+    if (!user) {
+      res.status(401).json({ message: "User not found" });
+    }
+    res.status(201).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//Xuất danh sách người dùng
+const exportUser = async (req, res) => {
+  const user = await User.find();
+  if (!user) {
+    res.status(400).json({ message: "Lỗi không tìm thấy dữ liệu" });
+  }
+  res.status(201).json({ message: "Get user success", user });
+};
+
+//Phần quyền staff
+const updateRole = async (req, res) => {
+  try {
+    //phone của nhân viên, Role bạn muốn cập nhập
+    //Password của Admin khi muốn cập nhập
+    const { phone, Password, Role } = req.body;
+    const admin = req.decoded?._id;
+    const passWordAdmin = await User.findById(admin);
+
+    if (Password !== passWordAdmin) {
+      res.status(401).json({ message: "Bạn không có quyền cập nhập" });
+    }
+    const user = await User.findByIdAndUpdate(phone, {
+      $set: {
+        Role: Role,
+      },
+    });
+    await user.save();
+    res.status(201).json({ message: "Update success" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports = {
+  register,
+  registerStaff,
+  login,
+  listUser,
+  search_User,
+  exportUser,
+  updateRole,
+};

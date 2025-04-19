@@ -12,13 +12,14 @@ const userSchema = new mongoose.Schema(
       required: true,
       enum: ["Admin", "User", "Staff"],
     },
+    Password: { type: String, required: false }, // Password cho admin phân role, cập quyền
   },
   { _id: false }
 );
 
 //------------------------------------------------------------------
 //Schema cho Category
-const CategorySchema = new mongoose.Schema({
+const categorySchema = new mongoose.Schema({
   //Tên của Category
   Name: {
     type: String,
@@ -156,7 +157,7 @@ const locationSchema = new mongoose.Schema({
 
 //------------------------------------------------------------------
 //Schema cho Amenities
-const AmenitiesSchema = new mongoose.Schema({
+const amenitiesSchema = new mongoose.Schema({
   // Tên của Amenities
   Name: {
     type: String,
@@ -217,8 +218,18 @@ const PropertyImageSchema = mongoose.model(
   propertyImageSchema
 );
 
+const LocationSchema = mongoose.model("Location", locationSchema);
+const AmenitiesSchema = mongoose.model("Amenities", amenitiesSchema);
+const CategorySchema = mongoose.model("Category", categorySchema);
+const NotificationSchema = mongoose.model("Notification", notificationSchema);
+
 module.exports = {
   User: UserSchema,
   Property: PropertySchema,
   PropertyImage: PropertyImageSchema,
+
+  Location: LocationSchema,
+  Amenities: AmenitiesSchema,
+  Category: CategorySchema,
+  Notification: NotificationSchema,
 };

@@ -2,7 +2,7 @@ const { verify } = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const checktokken = (req, res, next) => {
+const checktoken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -30,4 +30,4 @@ const validateApiKey = (req, res, next) => {
   next();
 };
 
-module.exports = { checktokken, validateApiKey };
+module.exports = { checktoken, validateApiKey };

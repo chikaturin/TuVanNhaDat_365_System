@@ -1,6 +1,6 @@
 const dotenv = require("dotenv");
 dotenv.config();
-const { Property, PropertyImage } = require("../../models/schema");
+const { Property, PropertyImage, Amenities } = require("../../models/schema");
 const { decode } = require("jsonwebtoken");
 
 //Tạo bài đăng
@@ -136,4 +136,67 @@ const getContentDetail = async (req, res) => {
   }
 };
 
-module.exports = { postContent, getContent };
+// Cập nhật trạng thái bài đăng
+const updateStatePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await Property.findByIdAndUpdate(id, {
+      $set: (Approved = true),
+    });
+
+    if (!post) {
+      return res.status(404).json({ message: "Không tìm thấy thông tin" });
+    }
+
+    res.status(201).json({ message: "update success" });
+  } catch (err) {
+    console.error("Lỗi trong updateStatePost:", err);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// Xóa bài đăng
+const deletePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const Post = await Property.findByIdAndDelete(id);
+    if (!Post) {
+      res.status(401).json({ message: "Can not find post" });
+    }
+    res.status(200).json({ message: "Delete post success" });
+  } catch (error) {
+    console.error("Lỗi trong deletePost:", error);
+    res.status(500).json({ message: "error", error });
+  }
+};
+
+// Cập nhật bài đăng
+const updatePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateFields = req.body;
+
+    const post = await Property.findByIdAndUpdate(id, updateFields, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!post) {
+      return res.status(404).json({ message: "Không tìm thấy thông tin" });
+    }
+
+    res.status(200).json({ message: "Cập nhật thông tin thành công" });
+  } catch (error) {
+    console.error("Lỗi trong updatePost:", error);
+    res.status(500).json({ message: "error", error });
+  }
+};
+
+module.exports = {
+  postContent,
+  getContent,
+  getContentDetail,
+  updateStatePost,
+  deletePost,
+  updatePost,
+};
