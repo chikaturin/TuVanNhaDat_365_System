@@ -1,4 +1,21 @@
 const mongoose = require("mongoose");
+
+//------------------------------------------------------------------
+//Schema cho AuditLog
+const auditLogSchema = new mongoose.Schema({
+  action: { type: String, required: true },
+  description: { type: String },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  userName: { type: String },
+  role: { type: String },
+  resource: { type: String },
+  resourceId: { type: String },
+  timestamp: { type: Date, default: Date.now },
+  ipAddress: { type: String },
+  previousData: { type: Object },
+  newData: { type: Object },
+  status: { type: String, enum: ["success", "fail"], default: "success" },
+});
 //------------------------------------------------------------------
 // Schema cho User
 const userSchema = new mongoose.Schema(
@@ -222,6 +239,7 @@ const LocationSchema = mongoose.model("Location", locationSchema);
 const AmenitiesSchema = mongoose.model("Amenities", amenitiesSchema);
 const CategorySchema = mongoose.model("Category", categorySchema);
 const NotificationSchema = mongoose.model("Notification", notificationSchema);
+const AuditLogSchema = mongoose.model("AuditLog", auditLogSchema);
 
 module.exports = {
   User: UserSchema,
@@ -232,4 +250,5 @@ module.exports = {
   Amenities: AmenitiesSchema,
   Category: CategorySchema,
   Notification: NotificationSchema,
+  AuditLog: AuditLogSchema,
 };

@@ -4,6 +4,9 @@ const { Property, PropertyImage, Amenities } = require("../../models/schema");
 const { decode } = require("jsonwebtoken");
 
 //Tạo bài đăng
+const Property = require("../models/Property");
+const Amenity = require("../models/Amenity"); // import model Amenity
+
 const postContent = async (req, res) => {
   try {
     const inforUser = req.decoded?._id;
@@ -21,7 +24,9 @@ const postContent = async (req, res) => {
       Location,
       Amenities,
     } = req.body;
+
     if (!inforUser) return res.status(401).json({ message: "Unauthorized" });
+
     if (
       !Title ||
       !Price ||
@@ -34,9 +39,11 @@ const postContent = async (req, res) => {
       !Category ||
       !State ||
       !Location ||
-      !Amenities
+      !Amenities ||
+      !Array.isArray(Amenities)
     )
       return res.status(400).json({ message: "Please fill in all fields" });
+
     const newListing = new Property({
       Title,
       Price,
@@ -49,13 +56,29 @@ const postContent = async (req, res) => {
       Category,
       State,
       Location,
-      Amenities,
       User: inforUser,
     });
     await newListing.save();
-    res.status(201).json({ message: "New listing created" });
+
+    const amenityDocs = await Promise.all(
+      Amenities.map((item) =>
+        new Amenity({
+          Name: item.Name,
+          Description: item.Description,
+          Property: newListing._id,
+        }).save()
+      )
+    );
+
+    newListing.Amenities = amenityDocs.map((doc) => doc._id);
+    await newListing.save();
+
+    res
+      .status(201)
+      .json({ message: "New listing created", listing: newListing });
   } catch (e) {
-    console.log("error", e);
+    console.error("error in postContent:", e);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
