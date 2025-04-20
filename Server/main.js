@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const { createServer } = require("http");
 const { json } = require("body-parser");
-// const db = require("./models/db");
+const db = require("./models/db");
 
 const app = express();
 

@@ -8,30 +8,37 @@ const register = async (req, res) => {
   try {
     const { PhoneNumber, Email, FirstName, LastName } = req.body;
 
-    //check phonenumber had been used before
-    const existPhoneNumber = await User.findOne({ _id: PhoneNumber });
-    if (existPhoneNumber) {
-      return res.status(400).json({ message: "Phone number already exist" });
+    // Kiểm tra xem số điện thoại đã tồn tại chưa
+    const existingUser = await User.findById(PhoneNumber);
+    if (existingUser) {
+      return res.status(400).json({ message: "Phone number already exists" });
     }
+
     const Role = "User";
+
     const user = new User({
-      _id: PhoneNumber,
+      _id: PhoneNumber, // dùng phone làm _id
       Email,
       FirstName,
       LastName,
       Role,
     });
+
     const token = jwt.sign(
       { PhoneNumber, Email, FirstName, LastName, Role },
       process.env.SECRET_KEY,
-      {
-        expiresIn: "24h",
-      }
+      { expiresIn: "24h" }
     );
+
     await user.save();
-    res.status(201).json({ message: "User created successfully", token });
+
+    return res.status(201).json({ message: "User created successfully", token });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error in register:", error); // In lỗi ra console để dễ debug
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message || "Unknown error",
+    });
   }
 };
 
