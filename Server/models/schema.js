@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema(
       enum: ["Admin", "User", "Staff"],
     },
     Password: { type: String, required: false }, // Password cho admin phân role, cập quyền
+    State:{
+      type: String,
+      required: true,
+      enum: ["Active", "Inactive"],
+      default: "Active",
+    }
   },
   { _id: false }
 );
