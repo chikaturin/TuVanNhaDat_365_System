@@ -2,22 +2,28 @@ const express = require("express");
 const router = express.Router();
 const {
   register,
-  registerStaff,
   login,
   listUser,
   search_User,
   exportUser,
   updateRole,
+  registerAD,
+  BlockAccount,
 } = require("../controllers/Authens.controller");
 const { sendOTP } = require("../../services/OTP.service");
-const { checktoken } = require("../../middleware/middleware");
+const {
+  checktoken,
+  checktokenAPI,
+  validateApiKey,
+} = require("../../middleware/middleware");
 
 router.post("/register", register);
-router.post("/register-staff", registerStaff);
+router.post("/registerAD", validateApiKey, registerAD);
+router.post("/checktokenAPI", checktokenAPI);
 router.post("/login", login);
-router.post("/send-otp", sendOTP);
-router.get("/listingUser", listUser);
-router.get("/SearchUser/:id", search_User);
-router.post("/UpdateRole", checktoken, updateRole);
+router.get("/listingUser", validateApiKey, checktoken, listUser);
+router.get("/SearchUser/:PhoneNumber", validateApiKey, checktoken, search_User);
+router.put("/UpdateRole", validateApiKey, checktoken, updateRole);
+router.put("/BlockAccount", validateApiKey, checktoken, BlockAccount);
 
 module.exports = router;
