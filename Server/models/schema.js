@@ -17,10 +17,10 @@ const auditLogSchema = new mongoose.Schema({
   status: { type: String, enum: ["success", "fail"], default: "success" },
 });
 //------------------------------------------------------------------
-// Schema cho User
-const userSchema = new mongoose.Schema(
+// Schema cho Account
+const accountSchema = new mongoose.Schema(
   {
-    _id: { type: String, required: true }, // Dùng phone number làm _id
+    PhoneNumber: { type: String, required: true, unique: true }, //Phone là id
     Email: { type: String, required: true, unique: true },
     FirstName: { type: String, required: true },
     LastName: { type: String, required: true },
@@ -29,9 +29,16 @@ const userSchema = new mongoose.Schema(
       required: true,
       enum: ["Admin", "User", "Staff"],
     },
+    Status: {
+      type: String,
+      required: true,
+      enum: ["Block", "Unblock"],
+    },
     Password: { type: String, required: false }, // Password cho admin phân role, cập quyền
   },
-  { _id: false }
+  {
+    id: false,
+  }
 );
 
 //------------------------------------------------------------------
@@ -99,10 +106,10 @@ const propertySchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
-  // Liên kết đến bảng User
-  User: {
+  // Liên kết đến bảng Account
+  Account: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "Account",
     required: true,
   },
   // Liên kết đến bảng Category
@@ -228,7 +235,6 @@ const notificationSchema = new mongoose.Schema({
 
 //------------------------------------------------------------------
 //Model
-const UserSchema = mongoose.model("Account", userSchema);
 const PropertySchema = mongoose.model("Property", propertySchema);
 const PropertyImageSchema = mongoose.model(
   "PropertyImage",
@@ -242,7 +248,7 @@ const NotificationSchema = mongoose.model("Notification", notificationSchema);
 const AuditLogSchema = mongoose.model("AuditLog", auditLogSchema);
 
 module.exports = {
-  User: UserSchema,
+  Account: mongoose.model("Account", accountSchema),
   Property: PropertySchema,
   PropertyImage: PropertyImageSchema,
 
