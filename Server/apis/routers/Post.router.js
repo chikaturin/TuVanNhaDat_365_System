@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { checktoken } = require("../../middleware/middleware");
+const { checkToken } = require("../../middleware/middleware");
 const {
   postContent,
   getContent,
@@ -10,9 +10,9 @@ const {
   updatePost,
 } = require("../controllers/Post_new.controller");
 
-router.post("/listings", checktoken, postContent);
+router.post("/listings", checkToken, postContent);
 router.get("/listings/", getContent);
-router.get("/listings/:id", checktoken, getContentDetail);
+router.get("/listings/:id", checkToken, getContentDetail);
 router.put("/listings/:id", updateStatePost);
 router.delete("/listings/:id", deletePost);
 router.put("/listings/update/:id", updatePost);

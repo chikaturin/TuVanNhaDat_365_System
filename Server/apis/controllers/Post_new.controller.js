@@ -3,9 +3,7 @@ dotenv.config();
 const { Property, PropertyImage, Amenities } = require("../../models/schema");
 const { decode } = require("jsonwebtoken");
 
-//Tạo bài đăng
-const Property = require("../models/Property");
-const Amenity = require("../models/Amenity"); // import model Amenity
+
 
 const postContent = async (req, res) => {
   try {
