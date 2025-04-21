@@ -10,12 +10,31 @@ const checkToken = (req, res, next) => {
     return res.status(401).json({ message: "Token is required" });
   }
 
-  verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+  verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
       return res.status(403).json({ message: "Invalid token" });
     }
     req.decoded = decoded;
     next();
+  });
+};
+
+const checktokenAPI = (req, res, next) => {
+  // const authHeader = req.headers["authorization"];
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(401).json({ message: "Token is required" });
+  }
+
+  verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+    req.decoded = decoded;
+    res.status(200).json({
+      decoded,
+    });
   });
 };
 
@@ -30,4 +49,4 @@ const validateApiKey = (req, res, next) => {
   next();
 };
 
-module.exports = { checkToken, validateApiKey };
+module.exports = { checktoken, validateApiKey, checktokenAPI };

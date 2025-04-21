@@ -1,10 +1,13 @@
 const dotenv = require("dotenv");
 dotenv.config();
-const { Property, PropertyImage, Amenities } = require("../../models/schema");
+const {
+  Property,
+  PropertyImage,
+  Amenities: AmenitiesModel,
+} = require("../../models/schema");
 const { decode } = require("jsonwebtoken");
 
-
-
+//Tạo bài đăng
 const postContent = async (req, res) => {
   try {
     const inforUser = req.decoded?._id;
@@ -25,22 +28,28 @@ const postContent = async (req, res) => {
 
     if (!inforUser) return res.status(401).json({ message: "Unauthorized" });
 
+    const requiredFields = [
+      Title,
+      Price,
+      Description,
+      Address,
+      Length,
+      Width,
+      Area,
+      NumberOfRooms,
+      Category,
+      State,
+      Location,
+      Amenities,
+    ];
+
     if (
-      !Title ||
-      !Price ||
-      !Description ||
-      !Address ||
-      !Length ||
-      !Width ||
-      !Area ||
-      !NumberOfRooms ||
-      !Category ||
-      !State ||
-      !Location ||
-      !Amenities ||
-      !Array.isArray(Amenities)
-    )
+      requiredFields.some(
+        (field) => !field || (Array.isArray(field) && field.length === 0)
+      )
+    ) {
       return res.status(400).json({ message: "Please fill in all fields" });
+    }
 
     const newListing = new Property({
       Title,
@@ -60,7 +69,7 @@ const postContent = async (req, res) => {
 
     const amenityDocs = await Promise.all(
       Amenities.map((item) =>
-        new Amenity({
+        new AmenitiesModel({
           Name: item.Name,
           Description: item.Description,
           Property: newListing._id,
@@ -140,17 +149,21 @@ const getContentDetail = async (req, res) => {
     const { id } = req.params;
     const inforUser = req.decoded?.Role;
     const property = await Property.findById(id);
+    const inforPoster = await User.findById(property.User);
     if (!property) {
       return res.status(404).json({ message: "Không tìm thấy thông tin" });
     }
-    if (inforUser === "Admin") {
-      const inforPoster = await User.findById(property.User);
+    if (inforUser === "Admin" || inforUser === "Staff") {
       if (!inforPoster) {
         return res.status(404).json({ message: "Không tìm thấy thông tin" });
       }
       return res.json({ property, inforPoster });
     }
-    return res.json({ property });
+    return res.status(201).json({
+      property,
+      firstName: inforPoster.FirstName,
+      lastName: inforPoster.LastName,
+    });
   } catch (err) {
     console.error("Lỗi trong getContentDetail:", err);
     return res.status(500).json({ message: "Lỗi server" });
