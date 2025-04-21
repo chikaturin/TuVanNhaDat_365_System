@@ -89,6 +89,105 @@ const postContent = async (req, res) => {
   }
 };
 
+const postContentImage = async (req, res) => {
+  try {
+    const infoUser = req.decoded?._id;
+    if (!infoUser) return res.status(401).json({ message: "Unauthorized" });
+
+    const {
+      Title,
+      Price,
+      Description,
+      Address,
+      Length,
+      Width,
+      Area,
+      NumberOfRooms,
+      Category,
+      State,
+      Location,
+      Amenities,
+    } = req.body;
+
+    const requiredFields = [
+      Title,
+      Price,
+      Description,
+      Address,
+      Length,
+      Width,
+      Area,
+      NumberOfRooms,
+      Category,
+      State,
+      Location,
+      Amenities,
+    ];
+
+    if (
+      requiredFields.some(
+        (field) => !field || (Array.isArray(field) && field.length === 0)
+      )
+    ) {
+      return res.status(400).json({ message: "Please fill in all fields" });
+    }
+    // Đảm bảo Amenities luôn là mảng
+    let parsedAmenities;
+    try {
+      parsedAmenities = Array.isArray(Amenities)
+        ? Amenities
+        : JSON.parse(Amenities || "[]");
+    } catch (err) {
+      return res.status(400).json({ error: "Trường Amenities không hợp lệ." });
+    }
+
+    const property = new Property({
+      Title,
+      Price,
+      Description,
+      Address,
+      Length,
+      Width,
+      Area,
+      NumberOfRooms,
+      Category,
+      State,
+      Location,
+      User: infoUser,
+      Amenities: parsedAmenities,
+    });
+
+    const savedProperty = await property.save();
+
+    if (files && files.length > 0) {
+      const webpImages = [];
+
+      for (const file of files) {
+        const webpBuffer = await sharp(file.buffer)
+          .webp({ quality: 80 })
+          .toBuffer();
+        webpImages.push(webpBuffer);
+      }
+
+      const imageDoc = new PropertyImage({
+        Image: webpImages,
+        Property: savedProperty._id,
+      });
+
+      await imageDoc.save();
+    }
+
+    res.status(201).json({
+      message: "Tạo property thành công!",
+      property: savedProperty,
+    });
+  } catch (error) {
+    console.error("Error in postContentImage:", error);
+    console.log(error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // const getContent = async (req, res) => {
 //   try {
 //     const {
@@ -232,6 +331,7 @@ const updatePost = async (req, res) => {
 
 module.exports = {
   postContent,
+  postContentImage,
   // getContent,
   getContentDetail,
   updateStatePost,
