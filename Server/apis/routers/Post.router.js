@@ -10,9 +10,9 @@ const {
   updatePost,
 } = require("../controllers/Post.controller");
 
-router.post("/listings", checktoken, postContent);
+router.post("/listings", checkToken, postContent);
 // router.get("/listings/", getContent);
-router.get("/listings/:_id", checktoken, getContentDetail);
+router.get("/listings/:_id", checkToken, getContentDetail);
 router.put("/listings/state/:_id", updateStatePost);
 router.delete("/listings/delete/:_id", deletePost);
 router.put("/listings/update/:_id", updatePost);
