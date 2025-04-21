@@ -222,6 +222,10 @@ const propertyImageSchema = new mongoose.Schema({
     ref: "Property",
     required: true,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 //------------------------------------------------------------------

@@ -49,4 +49,4 @@ const validateApiKey = (req, res, next) => {
   next();
 };
 
-module.exports = { checktoken, validateApiKey, checktokenAPI };
+module.exports = { checkToken, validateApiKey, checktokenAPI };

@@ -58,7 +58,7 @@ const registerAD = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    const { PhoneNumber, Email, FirstName, LastName, Password } = req.body;
+    const { PhoneNumber, Email, FirstName, LastName } = req.body;
 
     const existingAccount = await Account.findOne({
       $or: [{ PhoneNumber }, { Email }],
@@ -93,7 +93,9 @@ const register = async (req, res) => {
       .json({ message: "Account created successfully", token });
   } catch (error) {
     console.error("Register error:", error);
-    res.status(500).json({ message: "Internal server error", error });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
