@@ -7,12 +7,12 @@ const checktoken = (req, res, next) => {
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "Token is required" });
+    return res.status(405).json({ message: "Token is required" });
   }
 
   verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
-      return res.status(403).json({ message: "Invalid token" });
+      return res.status(406).json({ message: "Invalid token" });
     }
     req.decoded = decoded;
     next();
@@ -24,12 +24,12 @@ const checktokenAPI = (req, res, next) => {
   const { token } = req.body;
 
   if (!token) {
-    return res.status(401).json({ message: "Token is required" });
+    return res.status(405).json({ message: "Token is required" });
   }
 
   verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
-      return res.status(403).json({ message: "Invalid token" });
+      return res.status(405).json({ message: "Invalid token" });
     }
     req.decoded = decoded;
     res.status(200).json({
@@ -41,10 +41,10 @@ const checktokenAPI = (req, res, next) => {
 const validateApiKey = (req, res, next) => {
   const apiKey = req.headers["x-api-key"];
   if (!apiKey) {
-    return res.status(401).json({ message: "Thiếu API key" });
+    return res.status(407).json({ message: "Thiếu API key" });
   }
   if (apiKey !== process.env.API_KEY) {
-    return res.status(403).json({ message: "API key không hợp lệ" });
+    return res.status(408).json({ message: "API key không hợp lệ" });
   }
   next();
 };
