@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { checktoken } = require("../../middleware/middleware");
+const { checkToken } = require("../../middleware/middleware");
 const {
   postContent,
   // getContent,

@@ -12,7 +12,7 @@ const {
 } = require("../controllers/Authens.controller");
 const { sendOTP } = require("../../services/OTP.service");
 const {
-  checktoken,
+  checkToken,
   checktokenAPI,
   validateApiKey,
 } = require("../../middleware/middleware");
@@ -32,5 +32,4 @@ router.put(
   BlockAccount
 );
 router.get("/exportUser", validateApiKey, checktoken, exportUser);
-
 module.exports = router;

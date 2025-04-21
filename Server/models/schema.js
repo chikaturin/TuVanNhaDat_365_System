@@ -19,7 +19,7 @@ const auditLogSchema = new mongoose.Schema({
 //------------------------------------------------------------------
 // Schema cho Account
 const accountSchema = new mongoose.Schema({
-  PhoneNumber: { type: String, required: true, unique: true }, //Phone là id
+  PhoneNumber: { type: String, required: true, unique: true }, //Phone làm id
   Email: { type: String, required: true, unique: true },
   FirstName: { type: String, required: true },
   LastName: { type: String, required: true },
@@ -209,6 +209,10 @@ const propertyImageSchema = new mongoose.Schema({
     ref: "Property",
     required: true,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 //------------------------------------------------------------------

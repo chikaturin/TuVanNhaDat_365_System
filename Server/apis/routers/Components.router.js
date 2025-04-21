@@ -18,3 +18,5 @@ router.put("/notification/:id", updateNotification);
 router.delete("/notification/:id", deleteNotification);
 router.get("/notification", getNotification);
 router.post("/amenities", addAmenities);
+
+module.exports = router;
