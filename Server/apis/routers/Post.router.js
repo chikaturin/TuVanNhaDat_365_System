@@ -3,18 +3,18 @@ const router = express.Router();
 const { checktoken } = require("../../middleware/middleware");
 const {
   postContent,
-  getContent,
+  // getContent,
   getContentDetail,
   updateStatePost,
   deletePost,
   updatePost,
-} = require("../controllers/Post_new.controller");
+} = require("../controllers/Post.controller");
 
 router.post("/listings", checktoken, postContent);
-router.get("/listings/", getContent);
-router.get("/listings/:id", checktoken, getContentDetail);
-router.put("/listings/:id", updateStatePost);
-router.delete("/listings/:id", deletePost);
-router.put("/listings/update/:id", updatePost);
+// router.get("/listings/", getContent);
+router.get("/listings/:_id", checktoken, getContentDetail);
+router.put("/listings/state/:_id", updateStatePost);
+router.delete("/listings/delete/:_id", deletePost);
+router.put("/listings/update/:_id", updatePost);
 
 module.exports = router;

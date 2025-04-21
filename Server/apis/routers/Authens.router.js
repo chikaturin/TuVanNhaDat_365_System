@@ -17,13 +17,20 @@ const {
   validateApiKey,
 } = require("../../middleware/middleware");
 
-router.post("/register", register);
 router.post("/registerAD", validateApiKey, registerAD);
 router.post("/checktokenAPI", checktokenAPI);
+
+router.post("/register", register);
 router.post("/login", login);
 router.get("/listingUser", validateApiKey, checktoken, listUser);
-router.get("/SearchUser/:PhoneNumber", validateApiKey, checktoken, search_User);
-router.put("/UpdateRole", validateApiKey, checktoken, updateRole);
-router.put("/BlockAccount", validateApiKey, checktoken, BlockAccount);
+router.get("/searchUser/:PhoneNumber", validateApiKey, checktoken, search_User);
+router.put("/updateRole", validateApiKey, checktoken, updateRole);
+router.put(
+  "/blockAccount/:PhoneNumber",
+  validateApiKey,
+  checktoken,
+  BlockAccount
+);
+router.get("/exportUser", validateApiKey, checktoken, exportUser);
 
 module.exports = router;

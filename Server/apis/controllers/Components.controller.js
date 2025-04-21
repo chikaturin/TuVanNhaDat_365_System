@@ -1,6 +1,11 @@
-const { Location, Category, Notification } = require("../../models/schema");
+const {
+  Location,
+  Category,
+  Notification,
+  Amenities,
+} = require("../../models/schema");
 
-const addLocation = async (req, res) => {
+const addAmenities = async (req, res) => {
   try {
     const { Name, Description } = req.body;
     if (!Name || !Description) {
@@ -8,9 +13,30 @@ const addLocation = async (req, res) => {
         .status(400)
         .json({ message: "Vui lòng nhập đầy đủ thông tin" });
     }
+    const newAmenities = new Amenities({
+      Name,
+      Description,
+    });
+    await newAmenities.save();
+    res.status(201).json({ message: "Thêm tiện ích thành công" });
+  } catch (error) {
+    console.error("Lỗi trong addAmenities:", error);
+    res.status(500).json({ message: "error", error });
+  }
+};
+
+const addLocation = async (req, res) => {
+  try {
+    const { Name, Description, Icon } = req.body;
+    if (!Name || !Description || !Icon) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ thông tin" });
+    }
     const newLocation = new Location({
       Name,
       Description,
+      Icon,
     });
     await newLocation.save();
     res.status(201).json({ message: "Thêm địa điểm thành công" });
@@ -150,4 +176,5 @@ module.exports = {
   updateNotification,
   deleteNotification,
   getNotification,
+  addAmenities,
 };

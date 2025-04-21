@@ -8,6 +8,7 @@ const {
   updateNotification,
   deleteNotification,
   getNotification,
+  addAmenities,
 } = require("../controllers/components.controller");
 
 router.post("/location", addLocation);
@@ -16,3 +17,4 @@ router.post("/notification", addNotification);
 router.put("/notification/:id", updateNotification);
 router.delete("/notification/:id", deleteNotification);
 router.get("/notification", getNotification);
+router.post("/amenities", addAmenities);

@@ -18,28 +18,23 @@ const auditLogSchema = new mongoose.Schema({
 });
 //------------------------------------------------------------------
 // Schema cho Account
-const accountSchema = new mongoose.Schema(
-  {
-    PhoneNumber: { type: String, required: true, unique: true }, //Phone là id
-    Email: { type: String, required: true, unique: true },
-    FirstName: { type: String, required: true },
-    LastName: { type: String, required: true },
-    Role: {
-      type: String,
-      required: true,
-      enum: ["Admin", "User", "Staff"],
-    },
-    Status: {
-      type: String,
-      required: true,
-      enum: ["Block", "Unblock"],
-    },
-    Password: { type: String, required: false }, // Password cho admin phân role, cập quyền
+const accountSchema = new mongoose.Schema({
+  PhoneNumber: { type: String, required: true, unique: true }, //Phone là id
+  Email: { type: String, required: true, unique: true },
+  FirstName: { type: String, required: true },
+  LastName: { type: String, required: true },
+  Role: {
+    type: String,
+    required: true,
+    enum: ["Admin", "User", "Staff"],
   },
-  {
-    id: false,
-  }
-);
+  Status: {
+    type: String,
+    required: true,
+    enum: ["Block", "Active"],
+  },
+  Password: { type: String, required: false }, // Password cho admin phân role, cập quyền
+});
 
 //------------------------------------------------------------------
 //Schema cho Category
@@ -192,10 +187,8 @@ const amenitiesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  //Liên kết đến bảng Property
-  Property: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Property",
+  Icon: {
+    type: String,
     required: true,
   },
 });

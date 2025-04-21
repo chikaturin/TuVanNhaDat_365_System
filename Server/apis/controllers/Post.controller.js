@@ -89,73 +89,77 @@ const postContent = async (req, res) => {
   }
 };
 
-const getContent = async (req, res) => {
-  try {
-    const {
-      keyWord,
-      minPrice,
-      maxPrice,
-      Location,
-      page = 1,
-      pageSize = 20,
-    } = req.query;
+// const getContent = async (req, res) => {
+//   try {
+//     const {
+//       keyWord,
+//       minPrice,
+//       maxPrice,
+//       Location,
+//       page = 1,
+//       pageSize = 20,
+//     } = req.query;
 
-    const filter = {};
+//     const filter = {};
 
-    // Tìm kiếm theo từ khóa trong Title hoặc Description
-    if (keyWord) {
-      const regex = new RegExp(keyWord, "i");
-      filter.$or = [
-        { Title: { $regex: regex } },
-        { Description: { $regex: regex } },
-      ];
-    }
+//     // Tìm kiếm theo từ khóa trong Title hoặc Description
+//     if (keyWord) {
+//       const regex = new RegExp(keyWord, "i");
+//       filter.$or = [
+//         { Title: { $regex: regex } },
+//         { Description: { $regex: regex } },
+//       ];
+//     }
 
-    // Lọc theo khoảng giá
-    if (minPrice || maxPrice) {
-      filter.Price = {};
-      if (minPrice) filter.Price.$gte = parseInt(minPrice);
-      if (maxPrice) filter.Price.$lte = parseInt(maxPrice);
-    }
+//     // Lọc theo khoảng giá
+//     if (minPrice || maxPrice) {
+//       filter.Price = {};
+//       if (minPrice) filter.Price.$gte = parseInt(minPrice);
+//       if (maxPrice) filter.Price.$lte = parseInt(maxPrice);
+//     }
 
-    // Lọc theo khu vực
-    if (Location) {
-      filter.Location = Location;
-    }
+//     // Lọc theo khu vực
+//     if (Location) {
+//       filter.Location = Location;
+//     }
 
-    // Phân trang
-    const skip = (parseInt(page) - 1) * parseInt(pageSize);
-    const limit = parseInt(pageSize);
+//     // Phân trang
+//     const skip = (parseInt(page) - 1) * parseInt(pageSize);
+//     const limit = parseInt(pageSize);
 
-    const [total, listings] = await Promise.all([
-      Property.countDocuments(filter),
-      Property.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
-    ]);
+//     const [total, listings] = await Promise.all([
+//       Property.countDocuments(filter),
+//       Property.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+//     ]);
 
-    return res.json({
-      total,
-      page: parseInt(page),
-      pageSize: parseInt(pageSize),
-      listings,
-    });
-  } catch (err) {
-    console.error("Lỗi trong getContent:", err);
-    return res.status(500).json({ message: "Lỗi server" });
-  }
-};
+//     return res.json({
+//       total,
+//       page: parseInt(page),
+//       pageSize: parseInt(pageSize),
+//       listings,
+//     });
+//   } catch (err) {
+//     console.error("Lỗi trong getContent:", err);
+//     return res.status(500).json({ message: "Lỗi server" });
+//   }
+// };
 
 const getContentDetail = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { _id } = req.params;
     const inforUser = req.decoded?.Role;
-    const property = await Property.findById(id);
+    const property = await Property.findById(_id);
     const inforPoster = await User.findById(property.User);
     if (!property) {
-      return res.status(404).json({ message: "Không tìm thấy thông tin" });
+      return res
+        .status(401)
+        .json({ message: "Không tìm thấy thông tin property" });
     }
     if (inforUser === "Admin" || inforUser === "Staff") {
       if (!inforPoster) {
-        return res.status(404).json({ message: "Không tìm thấy thông tin" });
+        return res
+          .status(402)
+          .json({ message: "Không tìm thấy thông tin poster" });
       }
       return res.json({ property, inforPoster });
     }
@@ -179,7 +183,7 @@ const updateStatePost = async (req, res) => {
     });
 
     if (!post) {
-      return res.status(404).json({ message: "Không tìm thấy thông tin" });
+      return res.status(401).json({ message: "Không tìm thấy thông tin" });
     }
 
     res.status(201).json({ message: "update success" });
@@ -228,7 +232,7 @@ const updatePost = async (req, res) => {
 
 module.exports = {
   postContent,
-  getContent,
+  // getContent,
   getContentDetail,
   updateStatePost,
   deletePost,

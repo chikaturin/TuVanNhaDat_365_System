@@ -21,7 +21,7 @@ const registerAD = async (req, res) => {
 
     if (existingAccount) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "Phone number or email already exists" });
     }
 
@@ -33,12 +33,11 @@ const registerAD = async (req, res) => {
       Email,
       FirstName,
       LastName,
-      Status: "Unblock",
+      Status: "Active",
       Password: hashedPassword,
       Role,
     });
 
-    // Tạo token JWT
     const token = jwt.sign(
       { PhoneNumber, Email, FirstName, LastName },
       process.env.SECRET_KEY,
@@ -58,7 +57,13 @@ const registerAD = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    const { PhoneNumber, Email, FirstName, LastName, Password } = req.body;
+    const { PhoneNumber, Email, FirstName, LastName } = req.body;
+
+    if (!PhoneNumber || !Email || !FirstName || !LastName) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ thông tin" });
+    }
 
     const existingAccount = await Account.findOne({
       $or: [{ PhoneNumber }, { Email }],
@@ -66,7 +71,7 @@ const register = async (req, res) => {
 
     if (existingAccount) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "Phone number or email already exists" });
     }
 
@@ -75,8 +80,8 @@ const register = async (req, res) => {
       Email,
       FirstName,
       LastName,
-      Status: "Unblock", // Trạng thái mặc định là "Unblock"
-      Role: "User", // Phân quyền mặc định là "User"
+      Status: "Active",
+      Role: "User",
     });
 
     // Tạo token JWT
@@ -107,7 +112,6 @@ const login = async (req, res) => {
     }
     const token = jwt.sign(
       {
-        _id: user._id,
         FirstName: user.FirstName,
         LastName: user.LastName,
         Role: user.Role,
@@ -118,7 +122,7 @@ const login = async (req, res) => {
         expiresIn: "24h",
       }
     );
-    res.status(200).json({ message: "User logged in successfully", token });
+    res.status(201).json({ message: "User logged in successfully", token });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error by login", error });
@@ -152,14 +156,13 @@ const search_User = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
     const { PhoneNumber } = req.params;
-    console.log(PhoneNumber);
 
     const user = await Account.findOne({
       PhoneNumber: PhoneNumber,
     });
 
     if (!user) {
-      return res.status(401).json({ message: "Account not found" });
+      return res.status(400).json({ message: "Account not found" });
     }
 
     res.status(200).json({ user });
@@ -171,32 +174,50 @@ const search_User = async (req, res) => {
 //Xuất danh sách người dùng
 const exportUser = async (req, res) => {
   try {
-    const users = await Account.findOne({ Role: "User" });
+    const users = await Account.find({ Role: "User" });
 
     if (!users || users.length === 0) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "Không có người dùng nào để xuất" });
     }
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Danh sách người dùng");
-
     worksheet.columns = [
       { header: "STT", key: "index", width: 10 },
       { header: "Họ", key: "lastName", width: 30 },
       { header: "Tên", key: "firstName", width: 30 },
       { header: "Email", key: "email", width: 30 },
       { header: "Số điện thoại", key: "phone", width: 20 },
-    ];
+    ]; //Key của các cột
+
+    worksheet.getRow(1).font = { bold: true }; // in đậm
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    }); //Kẻ ô
 
     users.forEach((user, index) => {
-      worksheet.addRow({
+      const row = worksheet.addRow({
         index: index + 1,
         lastName: user.LastName,
         firstName: user.FirstName,
         email: user.Email,
-        phone: user._id,
+        phone: user.PhoneNumber,
+      });
+
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
       });
     });
 
@@ -224,9 +245,7 @@ const updateRole = async (req, res) => {
 
     const adminAccount = await Account.findOne({ PhoneNumber: adminPhone });
     if (!adminAccount) {
-      return res
-        .status(401)
-        .json({ message: "Không tìm thấy tài khoản admin" });
+      return res.status(401).json({ message: "Không đúng tài khoản admin" });
     }
 
     const isPasswordCorrect = await bcrypt.compare(
@@ -235,25 +254,18 @@ const updateRole = async (req, res) => {
     );
     if (!isPasswordCorrect) {
       return res
-        .status(401)
+        .status(402)
         .json({ message: "Bạn không có quyền cập nhập vì sai mật khẩu" });
     }
 
     const user = await Account.findOne({ PhoneNumber });
     if (!user) {
-      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+      return res.status(403).json({ message: "Không tìm thấy người dùng" });
     }
 
-    if (user.Role === "Staff") {
-      user.Role = "User";
-    } else if (user.Role === "User") {
+    if (user.Role === "User") {
       user.Role = "Staff";
-    } else {
-      return res
-        .status(400)
-        .json({ message: "Không thể cập nhật quyền cho tài khoản này" });
     }
-
     await user.save();
 
     return res.status(200).json({ message: "Cập nhật thành công", user });
@@ -268,19 +280,18 @@ const updateRole = async (req, res) => {
 
 const BlockAccount = async (req, res) => {
   try {
-    const { PhoneNumber } = req.body;
+    const { PhoneNumber } = req.params;
     const role = req.decoded?.Role;
 
-    console.log(role);
     if (role !== "Admin" && role !== "Staff") {
       return res
-        .status(401)
+        .status(402)
         .json({ message: "Bạn không có quyền khoá tài khoản" });
     }
 
     const user = await Account.findOne({ PhoneNumber });
     if (!user) {
-      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+      return res.status(403).json({ message: "Không tìm thấy người dùng" });
     }
 
     if (user.Role === "Admin") {
@@ -289,15 +300,17 @@ const BlockAccount = async (req, res) => {
         .json({ message: "Không thể cập nhật quyền cho tài khoản này" });
     }
 
-    if (user.Status === "Unblock") {
+    if (user.Status === "Active") {
       user.Status = "Block";
     } else if (user.Role === "Block") {
-      user.Status = "Unblock";
+      user.Status = "Active";
     }
 
     await user.save();
 
-    return res.status(200).json({ message: "Cập nhật thành công", user });
+    return res
+      .status(201)
+      .json({ message: "Đã khóa tài khoản thành công", user });
   } catch (error) {
     console.error("Error updating role:", error);
     return res.status(500).json({
