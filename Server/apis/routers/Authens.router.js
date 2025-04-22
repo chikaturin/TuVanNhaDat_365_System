@@ -22,14 +22,14 @@ router.post("/checktokenAPI", checktokenAPI);
 
 router.post("/register", register);
 router.post("/login", login);
-router.get("/listingUser", validateApiKey, checktoken, listUser);
-router.get("/searchUser/:PhoneNumber", validateApiKey, checktoken, search_User);
-router.put("/updateRole", validateApiKey, checktoken, updateRole);
+router.get("/listingUser", validateApiKey, checkToken, listUser);
+router.get("/searchUser/:PhoneNumber", validateApiKey, checkToken, search_User);
+router.put("/updateRole", validateApiKey, checkToken, updateRole);
 router.put(
   "/blockAccount/:PhoneNumber",
   validateApiKey,
-  checktoken,
+  checkToken,
   BlockAccount
 );
-router.get("/exportUser", validateApiKey, checktoken, exportUser);
+router.get("/exportUser", validateApiKey, checkToken, exportUser);
 module.exports = router;
