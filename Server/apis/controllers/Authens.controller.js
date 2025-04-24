@@ -7,7 +7,6 @@ dotenv.config();
 const {logAction} = require("../utils/auditlog");
 
 
-
 const registerAD = async (req, res) => {
   try {
     const { PhoneNumber, Email, FirstName, LastName, Password } = req.body;

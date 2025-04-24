@@ -3,9 +3,11 @@ const {
   Category,
   Notification,
   Amenities,
+  Account
 } = require("../../models/schema");
 
 const {logAction}= require("../utils/auditlog")
+const { decode } = require("jsonwebtoken");
 
 
 const addAmenities = async (req, res) => {
@@ -33,13 +35,15 @@ const addAmenities = async (req, res) => {
     await newAmenities.save();
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
 
+    const user  = await Account.findById(req.decoded?._id);
+
     // Ghi lại hành động vào audit log
     await logAction({
       action: "add_amenities",
       description: `Thêm tiện ích ${Name}`,
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: newAmenities,
@@ -50,12 +54,13 @@ const addAmenities = async (req, res) => {
   } catch (error) {
     // Ghi lại lỗi vào audit log
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const user  = await Account.findById(req.decoded?._id);
     await logAction({
       action: "add_amenities",
       description: "Lỗi khi thêm tiện ích",
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Namedecoded?.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: null,
@@ -81,13 +86,13 @@ const getListAmenities = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy tiện ích" });
     }
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-
+    const user  = await Account.findById(req.decoded?._id);
     await logAction({
       action: "get_amenities",
       description: "Lấy danh sách tiện ích",
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: amenities,
@@ -97,12 +102,14 @@ const getListAmenities = async (req, res) => {
   } catch (error) {
     // Ghi lại lỗi vào audit log
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const user  = await Account.findById(req.decoded?._id);
+
     await logAction({
       action: "get_amenities",
       description: "Lỗi khi lấy danh sách tiện ích",
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: null,
@@ -139,13 +146,16 @@ const addLocation = async (req, res) => {
 
     await newLocation.save();
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    
+    const user  = await Account.findById(req.decoded?._id);
+
     // Ghi lại hành động vào audit log
     await logAction({
       action: "add_location",
       description: `Thêm địa điểm ${Name}`,
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: newLocation,
@@ -155,12 +165,14 @@ const addLocation = async (req, res) => {
   } catch (error) {
     // Ghi lại lỗi vào audit log
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const user  = await Account.findById(req.decoded?._id);
+
     await logAction({
       action: "add_location",
       description: "Lỗi khi thêm địa điểm",
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: null,
@@ -181,13 +193,15 @@ const removeLocation = async (req, res) => {
     const deleteLocation = await Location.findByIdAndDelete(id);
 
     // Ghi lại hành động vào audit log
+    const user  = await Account.findById(req.decoded?._id);
+
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
     await logAction({
       action: "remove_location",
       description: `Xóa địa điểm ${id}`,
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: null,
@@ -201,12 +215,14 @@ const removeLocation = async (req, res) => {
     console.error("Lỗi trong deleteLocation:", error);
     // Ghi lại lỗi vào audit log
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const user  = await Account.findById(req.decoded?._id);
+
     await logAction({
       action: "remove_location",
       description: "Lỗi khi xóa địa điểm",
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: null,
@@ -238,14 +254,16 @@ const addCategory = async (req, res) => {
       Image,
     });
     await newCategory.save();
+    const user  = await Account.findById(req.decoded?._id);
+
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
     // Ghi lại hành động vào audit log
     await logAction({
       action: "add_category",
       description: `Thêm danh mục ${Name}`,
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: newCategory,
@@ -256,12 +274,14 @@ const addCategory = async (req, res) => {
     console.error("Lỗi trong addCate:", error);
     // Ghi lại lỗi vào audit log
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const user  = await Account.findById(req.decoded?._id);
+
     await logAction({
       action: "add_category",
       description: "Lỗi khi thêm danh mục",
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: null,
@@ -284,12 +304,14 @@ const removeCategory = async (req, res) => {
     }
     // Ghi lại hành động vào audit log
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const user  = await Account.findById(req.decoded?._id);
+
     await logAction({
       action: "remove_category",
       description: `Xóa phân loại ${id}`,
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: null,
@@ -301,12 +323,13 @@ const removeCategory = async (req, res) => {
     console.error("Lỗi trong delete category:", error);
     // Ghi lại lỗi vào audit log
     const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const user  = await Account.findById(req.decoded?._id);
     await logAction({
       action: "remove_category",
       description: "Lỗi khi xóa phân loại",
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: null,
@@ -336,8 +359,8 @@ const addNotification = async (req, res) => {
       action: "add_notification",
       description: `Thêm thông báo ${Title}`,
       userId: req.decoded?._id,
-      userName: req.decoded?.Name,
-      role: req.decoded?.role,
+      userName: user.Name,
+      role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
       newData: newNotification,
@@ -366,7 +389,7 @@ const updateNotification = async (req, res) => {
     );
     if (!updatedNotification) {
       return res.status(404).json({ message: "Không tìm thấy thông báo" });
-    }
+    } 
     res
       .status(200)
       .json({ message: "Cập nhật thông báo thành công", updatedNotification });

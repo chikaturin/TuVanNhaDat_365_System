@@ -4,11 +4,14 @@ const {
   Property,
   PropertyImage,
   Amenities: AmenitiesModel,
+  Account,
 } = require("../../models/schema");
-const { decode } = require("jsonwebtoken");
 const sharp = require("sharp");
 
 const {logAction}= require("../utils/auditlog")
+const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+const { decode } = require("jsonwebtoken");
+
 
 //Tạo bài đăng
 const postContent = async (req, res) => {
@@ -161,7 +164,8 @@ const postContentImage = async (req, res) => {
     });
 
     const savedProperty = await property.save();
-
+    //Lưu thông tin vào audit log
+   
     const videoFile = req.files?.video?.[0];
 
     if (videoFile) {
@@ -178,6 +182,7 @@ const postContentImage = async (req, res) => {
       await savedProperty.save();
     }
 
+    
   
 
     const files = req.files; // Lấy danh sách ảnh upload từ multer
@@ -209,6 +214,22 @@ const postContentImage = async (req, res) => {
       await imageDoc.save();
     }
 
+    const user  = await Account.findById(req.decoded?._id);
+    
+
+    await logAction({
+      action: "create",
+      description: "Tạo bài đăng mới",
+      userId: user._id,
+      userName: user.Name, // Thay thế bằng tên người dùng thực tế
+      role: user.Role,
+      ipAddress: getClientIp(req), // Lấy địa chỉ IP của người dùng
+      previousData: null, // Không có dữ liệu trước đó khi tạo mới
+      newData: savedProperty, // Dữ liệu mới được tạo
+      status:"success",
+    })
+
+
 
 
     res.status(201).json({
@@ -217,6 +238,20 @@ const postContentImage = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in postContentImage:", error);
+    // Ghi log lỗi vào audit log
+    const user  = await Account.findById(req.decoded?._id);
+    await logAction({
+      action: "create",
+      description: "Lỗi khi tạo bài đăng mới",
+      userId: user._id,
+      userName: user.Name, // Thay thế bằng tên người dùng thực tế
+      role: user.Role,
+      ipAddress: getClientIp(req), // Lấy địa chỉ IP của người dùng
+      previousData: null, // Không có dữ liệu trước đó khi tạo mới
+      newData: savedProperty, // Dữ liệu mới được tạo
+      status:"fail",
+    })
+
     console.log(error.message);
     res.status(500).json({ message: "Server error" , error: error.message});
   }
