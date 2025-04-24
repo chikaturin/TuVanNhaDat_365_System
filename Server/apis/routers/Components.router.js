@@ -3,16 +3,16 @@ const router = express.Router();
 
 const {
   addLocation,
-  addcategory,
+  addCategory,
   addNotification,
   updateNotification,
   deleteNotification,
   getNotification,
   addAmenities,
-} = require("../controllers/components.controller");
+} = require("../controllers/Components.controller");
 
 router.post("/location", addLocation);
-router.post("/category", addcategory);
+router.post("/category", addCategory);
 router.post("/notification", addNotification);
 router.put("/notification/:id", updateNotification);
 router.delete("/notification/:id", deleteNotification);

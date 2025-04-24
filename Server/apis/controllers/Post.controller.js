@@ -6,6 +6,9 @@ const {
   Amenities: AmenitiesModel,
 } = require("../../models/schema");
 const { decode } = require("jsonwebtoken");
+const sharp = require("sharp");
+
+const {logAction}= require("../utils/auditlog")
 
 //Tạo bài đăng
 const postContent = async (req, res) => {
@@ -91,8 +94,8 @@ const postContent = async (req, res) => {
 
 const postContentImage = async (req, res) => {
   try {
-    const infoUser = req.decoded?._id;
-    if (!infoUser) return res.status(401).json({ message: "Unauthorized" });
+      // const infoUser = req.decoded?._id;
+      // if (!infoUser) return res.status(401).json({ message: "Unauthorized" });
 
     const {
       Title,
@@ -153,11 +156,40 @@ const postContentImage = async (req, res) => {
       Category,
       State,
       Location,
-      User: infoUser,
+      User: 123,
       Amenities: parsedAmenities,
     });
 
     const savedProperty = await property.save();
+
+    const videoFile = req.files?.video?.[0];
+
+    if (videoFile) {
+      const videoBuffer = videoFile.buffer;
+      const videoMime = videoFile.mimetype;
+    
+      // Nếu muốn lưu vào MongoDB:
+      const propertyVideo = {
+        data: videoBuffer,
+        contentType: videoMime,
+      };
+
+      savedProperty.Video = propertyVideo;
+      await savedProperty.save();
+    }
+
+  
+
+    const files = req.files; // Lấy danh sách ảnh upload từ multer
+
+    if (!files || files.length < 4 || files.length > 9) {
+      return res.status(400).json({
+        error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
+      });
+    }
+
+
+    
 
     if (files && files.length > 0) {
       const webpImages = [];
@@ -177,6 +209,8 @@ const postContentImage = async (req, res) => {
       await imageDoc.save();
     }
 
+
+
     res.status(201).json({
       message: "Tạo property thành công!",
       property: savedProperty,
@@ -184,7 +218,7 @@ const postContentImage = async (req, res) => {
   } catch (error) {
     console.error("Error in postContentImage:", error);
     console.log(error.message);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" , error: error.message});
   }
 };
 
@@ -329,6 +363,31 @@ const updatePost = async (req, res) => {
   }
 };
 
+const getListPost = async (req, res) => {
+  try {
+    const { page = 1, pageSize = 20 } = req.query;
+    const skip = (page - 1) * pageSize;
+    const limit = parseInt(pageSize);
+
+    const posts = await Property.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalPosts = await Property.countDocuments();
+
+    res.status(200).json({
+      posts,
+      totalPosts,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(totalPosts / limit),
+    });
+  } catch (error) {
+    console.error("Lỗi trong getListPost:", error);
+    res.status(500).json({ message: "error", error });
+  }
+};
+
 module.exports = {
   postContent,
   postContentImage,
@@ -337,4 +396,5 @@ module.exports = {
   updateStatePost,
   deletePost,
   updatePost,
+  getListPost,
 };

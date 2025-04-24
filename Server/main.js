@@ -38,8 +38,8 @@ app.use(
 
 //routers
 app.use("/api", require("./apis/routers/Authens.router"));
-// app.use("/api", require("./apis/routers/Post.router"));
-// app.use("/api", require("./apis/routers/Components.router"));
+app.use("/api", require("./apis/routers/Post.router"));
+app.use("/api", require("./apis/routers/Components.router"));
 
 // 🔥 Add CORS headers manually in case middleware fails
 app.use((req, res, next) => {

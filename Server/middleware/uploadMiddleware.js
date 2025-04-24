@@ -1,13 +1,12 @@
 const multer = require("multer");
 
-// Dùng bộ nhớ tạm (RAM) thay vì lưu vào file hệ thống
 const storage = multer.memoryStorage();
-
 const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // tối đa 10MB mỗi ảnh
-  },
-});
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // Giới hạn 100MB nếu muốn
+}).fields([
+  { name: "images", maxCount: 9 },
+  { name: "video", maxCount: 1 },
+]);
 
 module.exports = upload;
