@@ -4,8 +4,7 @@ const { Account } = require("../../models/schema");
 const ExcelJS = require("exceljs");
 const bcrypt = require("bcrypt");
 dotenv.config();
-const {logAction} = require("../utils/auditlog");
-
+const { logAction } = require("../utils/auditlog");
 
 const registerAD = async (req, res) => {
   try {
@@ -283,9 +282,11 @@ const updateRole = async (req, res) => {
 const BlockAccount = async (req, res) => {
   try {
     const { PhoneNumber } = req.params;
-    const role = req.decoded?.Role;
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
 
-    if (role !== "Admin" && role !== "Staff") {
+    if (checkRole.Role !== "Admin" && checkRole.Role !== "Staff") {
       return res
         .status(402)
         .json({ message: "Bạn không có quyền khoá tài khoản" });
