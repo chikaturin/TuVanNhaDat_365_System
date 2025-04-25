@@ -4,8 +4,14 @@ const {
   Property,
   PropertyImage,
   Amenities: AmenitiesModel,
+  Account,
 } = require("../../models/schema");
+const sharp = require("sharp");
+
+const {logAction}= require("../utils/auditlog")
+const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
 const { decode } = require("jsonwebtoken");
+
 
 //Tạo bài đăng
 const postContent = async (req, res) => {
@@ -86,6 +92,168 @@ const postContent = async (req, res) => {
   } catch (e) {
     console.error("error in postContent:", e);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+const postContentImage = async (req, res) => {
+  try {
+      // const infoUser = req.decoded?._id;
+      // if (!infoUser) return res.status(401).json({ message: "Unauthorized" });
+
+    const {
+      Title,
+      Price,
+      Description,
+      Address,
+      Length,
+      Width,
+      Area,
+      NumberOfRooms,
+      Category,
+      State,
+      Location,
+      Amenities,
+    } = req.body;
+
+    const requiredFields = [
+      Title,
+      Price,
+      Description,
+      Address,
+      Length,
+      Width,
+      Area,
+      NumberOfRooms,
+      Category,
+      State,
+      Location,
+      Amenities,
+    ];
+
+    if (
+      requiredFields.some(
+        (field) => !field || (Array.isArray(field) && field.length === 0)
+      )
+    ) {
+      return res.status(400).json({ message: "Please fill in all fields" });
+    }
+    // Đảm bảo Amenities luôn là mảng
+    let parsedAmenities;
+    try {
+      parsedAmenities = Array.isArray(Amenities)
+        ? Amenities
+        : JSON.parse(Amenities || "[]");
+    } catch (err) {
+      return res.status(400).json({ error: "Trường Amenities không hợp lệ." });
+    }
+
+    const property = new Property({
+      Title,
+      Price,
+      Description,
+      Address,
+      Length,
+      Width,
+      Area,
+      NumberOfRooms,
+      Category,
+      State,
+      Location,
+      User: 123,
+      Amenities: parsedAmenities,
+    });
+
+    const savedProperty = await property.save();
+    //Lưu thông tin vào audit log
+   
+    const videoFile = req.files?.video?.[0];
+
+    if (videoFile) {
+      const videoBuffer = videoFile.buffer;
+      const videoMime = videoFile.mimetype;
+    
+      // Nếu muốn lưu vào MongoDB:
+      const propertyVideo = {
+        data: videoBuffer,
+        contentType: videoMime,
+      };
+
+      savedProperty.Video = propertyVideo;
+      await savedProperty.save();
+    }
+
+    
+  
+
+    const files = req.files; // Lấy danh sách ảnh upload từ multer
+
+    if (!files || files.length < 4 || files.length > 9) {
+      return res.status(400).json({
+        error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
+      });
+    }
+
+
+    
+
+    if (files && files.length > 0) {
+      const webpImages = [];
+
+      for (const file of files) {
+        const webpBuffer = await sharp(file.buffer)
+          .webp({ quality: 80 })
+          .toBuffer();
+        webpImages.push(webpBuffer);
+      }
+
+      const imageDoc = new PropertyImage({
+        Image: webpImages,
+        Property: savedProperty._id,
+      });
+
+      await imageDoc.save();
+    }
+
+    const user  = await Account.findById(req.decoded?._id);
+    
+
+    await logAction({
+      action: "create",
+      description: "Tạo bài đăng mới",
+      userId: user._id,
+      userName: user.Name, // Thay thế bằng tên người dùng thực tế
+      role: user.Role,
+      ipAddress: getClientIp(req), // Lấy địa chỉ IP của người dùng
+      previousData: null, // Không có dữ liệu trước đó khi tạo mới
+      newData: savedProperty, // Dữ liệu mới được tạo
+      status:"success",
+    })
+
+
+
+
+    res.status(201).json({
+      message: "Tạo property thành công!",
+      property: savedProperty,
+    });
+  } catch (error) {
+    console.error("Error in postContentImage:", error);
+    // Ghi log lỗi vào audit log
+    const user  = await Account.findById(req.decoded?._id);
+    await logAction({
+      action: "create",
+      description: "Lỗi khi tạo bài đăng mới",
+      userId: user._id,
+      userName: user.Name, // Thay thế bằng tên người dùng thực tế
+      role: user.Role,
+      ipAddress: getClientIp(req), // Lấy địa chỉ IP của người dùng
+      previousData: null, // Không có dữ liệu trước đó khi tạo mới
+      newData: savedProperty, // Dữ liệu mới được tạo
+      status:"fail",
+    })
+
+    console.log(error.message);
+    res.status(500).json({ message: "Server error" , error: error.message});
   }
 };
 
@@ -230,11 +398,38 @@ const updatePost = async (req, res) => {
   }
 };
 
+const getListPost = async (req, res) => {
+  try {
+    const { page = 1, pageSize = 20 } = req.query;
+    const skip = (page - 1) * pageSize;
+    const limit = parseInt(pageSize);
+
+    const posts = await Property.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalPosts = await Property.countDocuments();
+
+    res.status(200).json({
+      posts,
+      totalPosts,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(totalPosts / limit),
+    });
+  } catch (error) {
+    console.error("Lỗi trong getListPost:", error);
+    res.status(500).json({ message: "error", error });
+  }
+};
+
 module.exports = {
   postContent,
+  postContentImage,
   // getContent,
   getContentDetail,
   updateStatePost,
   deletePost,
   updatePost,
+  getListPost,
 };

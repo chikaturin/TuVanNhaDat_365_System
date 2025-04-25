@@ -1,17 +1,16 @@
-const AuditLog = require("../../models/schema").AuditLog;
+// utils/auditLogger.js
+const AuditLog = require("../../models/schema").AuditLog; // Import your AuditLog model
 
-const logAudit = async ({
+const logAction = async ({
   action,
-  description,
+  description = "",
   userId,
   userName,
   role,
-  resource,
-  resourceId,
   ipAddress,
   previousData,
   newData,
-  status = "success",
+  status = "success"
 }) => {
   try {
     await AuditLog.create({
@@ -20,16 +19,14 @@ const logAudit = async ({
       userId,
       userName,
       role,
-      resource,
-      resourceId,
       ipAddress,
       previousData,
       newData,
-      status,
+      status
     });
-  } catch (error) {
-    console.error("Không thể ghi Audit Log:", error);
+  } catch (err) {
+    console.error("Lỗi ghi audit log:", err);
   }
 };
 
-module.exports = logAudit;
+module.exports = { logAction };

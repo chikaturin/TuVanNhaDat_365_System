@@ -4,6 +4,8 @@ const { Account } = require("../../models/schema");
 const ExcelJS = require("exceljs");
 const bcrypt = require("bcrypt");
 dotenv.config();
+const {logAction} = require("../utils/auditlog");
+
 
 const registerAD = async (req, res) => {
   try {
