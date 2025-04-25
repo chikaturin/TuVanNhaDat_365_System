@@ -8,6 +8,8 @@ const auditLogSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   userName: { type: String },
   role: { type: String },
+  resource: { type: String },
+  resourceId: { type: String },
   timestamp: { type: Date, default: Date.now },
   ipAddress: { type: String },
   previousData: { type: Object },
@@ -99,17 +101,12 @@ const propertySchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
-
-  Video: {
-    data: Buffer,
-    contentType: String,
-  },  
-  // // Liên kết đến bảng Account
-  // Account: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "Account",
-  //   required: true,
-  // },
+  // Liên kết đến bảng Account
+  Account: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Account",
+    required: true,
+  },
   // Liên kết đến bảng Category
   Category: {
     type: mongoose.Schema.Types.ObjectId,
@@ -179,7 +176,7 @@ const locationSchema = new mongoose.Schema({
 
 //------------------------------------------------------------------
 //Schema cho Amenities
-const   amenitiesSchema = new mongoose.Schema({
+const amenitiesSchema = new mongoose.Schema({
   // Tên của Amenities
   Name: {
     type: String,
@@ -214,8 +211,8 @@ const propertyImageSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 //------------------------------------------------------------------
