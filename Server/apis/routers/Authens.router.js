@@ -10,7 +10,7 @@ const {
   registerAD,
   BlockAccount,
 } = require("../controllers/Authens.controller");
-const { sendOTP } = require("../../services/OTP.service");
+// const { sendOTP } = require("../../services/OTP.service");
 const {
   checkToken,
   checktokenAPI,
