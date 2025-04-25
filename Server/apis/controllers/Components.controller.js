@@ -3,26 +3,27 @@ const {
   Category,
   Notification,
   Amenities,
-  Account
+  Account,
 } = require("../../models/schema");
 
-const {logAction}= require("../utils/auditlog")
+const { logAction } = require("../utils/auditlog");
 const { decode } = require("jsonwebtoken");
-
 
 const addAmenities = async (req, res) => {
   try {
-    const  role  = req.decoded?.role; // Lấy role từ decoded token
-    if (role !== "Admin"|| role !== "Staff") {
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+    if (checkRole.Role !== "Admin" || checkRole.Role !== "Staff") {
       return res.status(403).json({ message: "Khong co quyen truy cap" });
     }
-    
-    const { Name, Description,Icon } = req.body;
+
+    const { Name, Description, Icon } = req.body;
     const existingAmenities = await Amenities.findOne({ Name });
     if (existingAmenities) {
       return res.status(400).json({ message: "Tiện ích đã tồn tại" });
     }
-    if (!Name || !Description||!Icon) {
+    if (!Name || !Description || !Icon) {
       return res
         .status(400)
         .json({ message: "Vui lòng nhập đầy đủ thông tin" });
@@ -30,12 +31,13 @@ const addAmenities = async (req, res) => {
     const newAmenities = new Amenities({
       Name,
       Description,
-      Icon
+      Icon,
     });
     await newAmenities.save();
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
-    const user  = await Account.findById(req.decoded?._id);
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
     // Ghi lại hành động vào audit log
     await logAction({
@@ -48,13 +50,13 @@ const addAmenities = async (req, res) => {
       previousData: null,
       newData: newAmenities,
       status: "success",
-
-    })
+    });
     res.status(201).json({ message: "Thêm tiện ích thành công" });
   } catch (error) {
     // Ghi lại lỗi vào audit log
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const user = await Account.findById(req.decoded?.PhoneNumber);
     await logAction({
       action: "add_amenities",
       description: "Lỗi khi thêm tiện ích",
@@ -65,19 +67,18 @@ const addAmenities = async (req, res) => {
       previousData: null,
       newData: null,
       status: "fail",
-
-    })
+    });
     console.error("Lỗi trong addAmenities:", error);
     res.status(500).json({ message: "error", error: error.message });
   }
 };
 
 const getListAmenities = async (req, res) => {
-
   try {
-    const  role  = req.decoded?.role; // Lấy role từ decoded token
-
-    if (role !== "Admin"|| role !== "Staff") {
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+    if (checkRole.Role !== "Admin" || checkRole.Role !== "Staff") {
       return res.status(403).json({ message: "Khong co quyen truy cap" });
     }
 
@@ -85,8 +86,9 @@ const getListAmenities = async (req, res) => {
     if (!amenities) {
       return res.status(404).json({ message: "Không tìm thấy tiện ích" });
     }
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const user = await Account.findById(req.decoded?.PhoneNumber);
     await logAction({
       action: "get_amenities",
       description: "Lấy danh sách tiện ích",
@@ -97,12 +99,13 @@ const getListAmenities = async (req, res) => {
       previousData: null,
       newData: amenities,
       status: "success",
-    })
+    });
     res.status(200).json({ message: "Lấy tiện ích thành công", amenities });
   } catch (error) {
     // Ghi lại lỗi vào audit log
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
     await logAction({
       action: "get_amenities",
@@ -114,17 +117,18 @@ const getListAmenities = async (req, res) => {
       previousData: null,
       newData: null,
       status: "fail",
-    })
+    });
     console.error("Lỗi trong getListAmenities:", error);
     res.status(500).json({ message: "error", error });
   }
-}
+};
 
 const addLocation = async (req, res) => {
   try {
-
-    const  role  = req.decoded?.role; // Lấy role từ decoded token
-    if (role !== "Admin"|| role !== "Staff") {
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+    if (checkRole.Role !== "Admin" || checkRole.Role !== "Staff") {
       return res.status(403).json({ message: "Khong co quyen truy cap" });
     }
     const { Name, Description } = req.body;
@@ -133,7 +137,7 @@ const addLocation = async (req, res) => {
     if (existingLocation) {
       return res.status(400).json({ message: "Địa điểm đã tồn tại" });
     }
-    if (!Name || !Description  ) {
+    if (!Name || !Description) {
       return res
         .status(400)
         .json({ message: "Vui lòng nhập đầy đủ thông tin" });
@@ -145,9 +149,10 @@ const addLocation = async (req, res) => {
     });
 
     await newLocation.save();
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
     // Ghi lại hành động vào audit log
     await logAction({
@@ -160,12 +165,13 @@ const addLocation = async (req, res) => {
       previousData: null,
       newData: newLocation,
       status: "success",
-    })
+    });
     res.status(201).json({ message: "Thêm địa điểm thành công" });
   } catch (error) {
     // Ghi lại lỗi vào audit log
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
     await logAction({
       action: "add_location",
@@ -177,25 +183,28 @@ const addLocation = async (req, res) => {
       previousData: null,
       newData: null,
       status: "fail",
-    })
+    });
     console.error("Lỗi trong addLocation:", error);
-    res.status(500).json({ message: "error", error : error.message });
+    res.status(500).json({ message: "error", error: error.message });
   }
 };
 
 const removeLocation = async (req, res) => {
   try {
-    const  role  = req.decoded?.role; // Lấy role từ decoded token
-    if (role !== "Admin"|| role !== "Staff") {
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+    if (checkRole.Role !== "Admin" || checkRole.Role !== "Staff") {
       return res.status(403).json({ message: "Khong co quyen truy cap" });
     }
     const { id } = req.params;
     const deleteLocation = await Location.findByIdAndDelete(id);
 
     // Ghi lại hành động vào audit log
-    const user  = await Account.findById(req.decoded?._id);
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
     await logAction({
       action: "remove_location",
       description: `Xóa địa điểm ${id}`,
@@ -206,7 +215,7 @@ const removeLocation = async (req, res) => {
       previousData: null,
       newData: null,
       status: "success",
-    })
+    });
     if (!deleteLocation) {
       return res.status(404).json({ message: "Không tìm thấy địa chỉ" });
     }
@@ -214,8 +223,9 @@ const removeLocation = async (req, res) => {
   } catch (error) {
     console.error("Lỗi trong deleteLocation:", error);
     // Ghi lại lỗi vào audit log
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
     await logAction({
       action: "remove_location",
@@ -227,15 +237,17 @@ const removeLocation = async (req, res) => {
       previousData: null,
       newData: null,
       status: "fail",
-    })
+    });
     res.status(500).json({ message: "error", error: error.message });
   }
 };
 
 const addCategory = async (req, res) => {
   try {
-    const  role  = req.decoded?.role; // Lấy role từ decoded token
-    if (role !== "Admin"|| role !== "Staff") {
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+    if (checkRole.Role !== "Admin" || checkRole.Role !== "Staff") {
       return res.status(403).json({ message: "Khong co quyen truy cap" });
     }
     const { Name, Image } = req.body;
@@ -245,7 +257,7 @@ const addCategory = async (req, res) => {
         .json({ message: "Vui lòng nhập đầy đủ thông tin" });
     }
 
-    const existingCategory = await Category.findOne({ Name})
+    const existingCategory = await Category.findOne({ Name });
     if (existingCategory) {
       return res.status(400).json({ message: "Danh mục đã tồn tại" });
     }
@@ -254,9 +266,10 @@ const addCategory = async (req, res) => {
       Image,
     });
     await newCategory.save();
-    const user  = await Account.findById(req.decoded?._id);
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
     // Ghi lại hành động vào audit log
     await logAction({
       action: "add_category",
@@ -268,13 +281,14 @@ const addCategory = async (req, res) => {
       previousData: null,
       newData: newCategory,
       status: "success",
-    })
+    });
     res.status(201).json({ message: "Thêm danh mục thành công" });
   } catch (error) {
     console.error("Lỗi trong addCate:", error);
     // Ghi lại lỗi vào audit log
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
     await logAction({
       action: "add_category",
@@ -286,15 +300,17 @@ const addCategory = async (req, res) => {
       previousData: null,
       newData: null,
       status: "fail",
-    })
+    });
     res.status(500).json({ message: "error", error: error.message });
   }
 };
 
 const removeCategory = async (req, res) => {
   try {
-    const  role  = req.decoded?.role; // Lấy role từ decoded token
-    if (role !== "Admin"|| role !== "Staff") {
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+    if (checkRole.Role !== "Admin" || checkRole.Role !== "Staff") {
       return res.status(403).json({ message: "Khong co quyen truy cap" });
     }
     const { id } = req.params;
@@ -303,8 +319,9 @@ const removeCategory = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy phân loại" });
     }
     // Ghi lại hành động vào audit log
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const user = await Account.findById(req.decoded?.PhoneNumber);
 
     await logAction({
       action: "remove_category",
@@ -316,14 +333,15 @@ const removeCategory = async (req, res) => {
       previousData: null,
       newData: null,
       status: "success",
-    })
+    });
 
     res.status(200).json({ message: "Xóa phân loại thành công" });
   } catch (error) {
     console.error("Lỗi trong delete category:", error);
     // Ghi lại lỗi vào audit log
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-    const user  = await Account.findById(req.decoded?._id);
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const user = await Account.findById(req.decoded?.PhoneNumber);
     await logAction({
       action: "remove_category",
       description: "Lỗi khi xóa phân loại",
@@ -334,14 +352,13 @@ const removeCategory = async (req, res) => {
       previousData: null,
       newData: null,
       status: "fail",
-    })
+    });
     res.status(500).json({ message: "error", error });
   }
 };
 
 const addNotification = async (req, res) => {
   try {
-
     const { Title, Content } = req.body;
     if (!Title || !Content) {
       return res
@@ -353,7 +370,8 @@ const addNotification = async (req, res) => {
       Content,
     });
     await newNotification.save();
-    const getClientIp = (req) => req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const getClientIp = (req) =>
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
     // Ghi lại hành động vào audit log
     await logAction({
       action: "add_notification",
@@ -365,7 +383,7 @@ const addNotification = async (req, res) => {
       previousData: null,
       newData: newNotification,
       status: "success",
-    })
+    });
     res.status(201).json({ message: "Thêm thông báo thành công" });
   } catch (error) {
     console.error("Lỗi trong addNotification:", error);
@@ -389,7 +407,7 @@ const updateNotification = async (req, res) => {
     );
     if (!updatedNotification) {
       return res.status(404).json({ message: "Không tìm thấy thông báo" });
-    } 
+    }
     res
       .status(200)
       .json({ message: "Cập nhật thông báo thành công", updatedNotification });
