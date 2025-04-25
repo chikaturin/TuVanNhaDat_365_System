@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const auditLogSchema = new mongoose.Schema({
   action: { type: String, required: true },
   description: { type: String },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
   userName: { type: String },
   role: { type: String },
   resource: { type: String },
@@ -103,14 +103,12 @@ const propertySchema = new mongoose.Schema({
   },
   // Liên kết đến bảng Account
   Account: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Account",
+    type: String,
     required: true,
   },
   // Liên kết đến bảng Category
   Category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
+    type: String,
     required: true,
   },
   // Liên kết đến bảng State
@@ -126,8 +124,7 @@ const propertySchema = new mongoose.Schema({
   },
   // Liên kết đến bảng Location
   Location: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Location",
+    type: String,
     required: true,
   },
   // Liên kết đến bảng Amenities
