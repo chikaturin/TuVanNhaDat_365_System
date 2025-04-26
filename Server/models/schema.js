@@ -124,6 +124,10 @@ const propertySchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  Label:{
+    type: String,
+    required: true,
+  },
   // Liên kết đến bảng Location
   Location: {
     type: mongoose.Schema.Types.ObjectId,
@@ -179,11 +183,6 @@ const locationSchema = new mongoose.Schema({
 const amenitiesSchema = new mongoose.Schema({
   // Tên của Amenities
   Name: {
-    type: String,
-    required: true,
-  },
-  // Mô tả của Amenities
-  Description: {
     type: String,
     required: true,
   },

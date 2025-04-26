@@ -97,8 +97,7 @@ const postContent = async (req, res) => {
 
 const postContentImage = async (req, res) => {
   try {
-      // const infoUser = req.decoded?._id;
-      // if (!infoUser) return res.status(401).json({ message: "Unauthorized" });
+  
 
     const {
       Title,
@@ -164,26 +163,6 @@ const postContentImage = async (req, res) => {
     });
 
     const savedProperty = await property.save();
-    //Lưu thông tin vào audit log
-   
-    const videoFile = req.files?.video?.[0];
-
-    if (videoFile) {
-      const videoBuffer = videoFile.buffer;
-      const videoMime = videoFile.mimetype;
-    
-      // Nếu muốn lưu vào MongoDB:
-      const propertyVideo = {
-        data: videoBuffer,
-        contentType: videoMime,
-      };
-
-      savedProperty.Video = propertyVideo;
-      await savedProperty.save();
-    }
-
-    
-  
 
     const files = req.files; // Lấy danh sách ảnh upload từ multer
 
@@ -192,9 +171,6 @@ const postContentImage = async (req, res) => {
         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
       });
     }
-
-
-    
 
     if (files && files.length > 0) {
       const webpImages = [];
@@ -214,12 +190,12 @@ const postContentImage = async (req, res) => {
       await imageDoc.save();
     }
 
-    const user  = await Account.findById(req.decoded?._id);
+    const user  = await Account.findById(req.decoded?.PhoneNumber);
     
 
     await logAction({
       action: "create",
-      description: "Tạo bài đăng mới",
+      description: "Tạo bài đăng mới thành công "+savedProperty._id,
       userId: user._id,
       userName: user.Name, // Thay thế bằng tên người dùng thực tế
       role: user.Role,
@@ -239,16 +215,16 @@ const postContentImage = async (req, res) => {
   } catch (error) {
     console.error("Error in postContentImage:", error);
     // Ghi log lỗi vào audit log
-    const user  = await Account.findById(req.decoded?._id);
+    const user  = await Account.findById(req.decoded?.PhoneNumber);
     await logAction({
       action: "create",
       description: "Lỗi khi tạo bài đăng mới",
       userId: user._id,
-      userName: user.Name, // Thay thế bằng tên người dùng thực tế
+      userName: user.Name, 
       role: user.Role,
-      ipAddress: getClientIp(req), // Lấy địa chỉ IP của người dùng
-      previousData: null, // Không có dữ liệu trước đó khi tạo mới
-      newData: savedProperty, // Dữ liệu mới được tạo
+      ipAddress: getClientIp(req), 
+      previousData: null, 
+      newData: savedProperty, 
       status:"fail",
     })
 
