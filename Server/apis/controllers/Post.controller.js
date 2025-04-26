@@ -8,14 +8,10 @@ const {
 } = require("../../models/schema");
 const sharp = require("sharp");
 const { logAction } = require("../utils/auditlog");
-const getClientIp = (req) =>
-  req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+const getClientIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
 const postContentImage = async (req, res) => {
   try {
-      // const infoUser = req.decoded?._id;
-      // if (!infoUser) return res.status(401).json({ message: "Unauthorized" });
-
     const {
       Title,
       Price,
@@ -23,9 +19,13 @@ const postContentImage = async (req, res) => {
       Address,
       Length,
       Width,
-      Area,
       NumberOfRooms,
-      Category,
+      bedroom,
+      bathroom,
+      yearBuilt,
+      garage,
+      sqft,
+      category,
       State,
       Label,
       Location,
@@ -33,29 +33,15 @@ const postContentImage = async (req, res) => {
     } = req.body;
 
     const requiredFields = [
-      Title,
-      Price,
-      Description,
-      Address,
-      Length,
-      Width,
-      Area,
-      NumberOfRooms,
-      Category,
-      State,
-      Label,
-      Location,
-      Amenities,
-      Label,
+      Title, Price, Description, Address, Length, Width,
+      NumberOfRooms, bedroom, bathroom, yearBuilt, garage, sqft, category,
+      State, Location, Amenities
     ];
 
-    if (
-      requiredFields.some(
-        (field) => !field || (Array.isArray(field) && field.length === 0)
-      )
-    ) {
-      return res.status(400).json({ message: "Please fill in all fields" });
+    if (requiredFields.some(field => field === undefined || field === null || (Array.isArray(field) && field.length === 0))) {
+      return res.status(400).json({ message: "Vui lòng điền đầy đủ các trường." });
     }
+
     // Đảm bảo Amenities luôn là mảng
     let parsedAmenities;
     try {
@@ -73,19 +59,25 @@ const postContentImage = async (req, res) => {
       Address,
       Length,
       Width,
-      Area,
       NumberOfRooms,
-      Category,
+      Account: req.decoded?.PhoneNumber,
       State,
       Label,
       Location,
-      Account: req.decoded?.PhoneNumber,
       Amenities: parsedAmenities,
+      Type: {
+        bedroom,
+        bathroom,
+        yearBuilt,
+        garage,
+        sqft,
+        category,
+      }
     });
 
     const savedProperty = await property.save();
 
-    const files = req.files; // Lấy danh sách ảnh upload từ multer
+    const files = req.files; // Danh sách ảnh upload từ multer
 
     if (!files || files.length < 4 || files.length > 9) {
       return res.status(400).json({
@@ -111,12 +103,12 @@ const postContentImage = async (req, res) => {
       await imageDoc.save();
     }
 
-    const user = await Account.findOne(req.decoded?.PhoneNumber);
-    //Lưu thông tin vào audit log
+    const user = await Account.findOne({ PhoneNumber: req.decoded?.PhoneNumber });
 
+    // Lưu audit log
     await logAction({
       action: "create",
-      description: "Tạo bài đăng mới thành công "+savedProperty._id,
+      description: "Tạo bài đăng mới thành công " + savedProperty._id,
       userId: user._id,
       userName: user.Name,
       role: user.Role,
@@ -132,8 +124,8 @@ const postContentImage = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in postContentImage:", error);
-    // Ghi log lỗi vào audit log
-    const user = await Account.findOne(req.decoded?.PhoneNumber);
+    const user = await Account.findOne({ PhoneNumber: req.decoded?.PhoneNumber });
+
     await logAction({
       action: "create",
       description: "Lỗi khi tạo bài đăng mới",
@@ -142,14 +134,14 @@ const postContentImage = async (req, res) => {
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
-      newData: savedProperty,
+      newData: null,
       status: "fail",
     });
 
-    console.log(error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 // const getContent = async (req, res) => {
 //   try {

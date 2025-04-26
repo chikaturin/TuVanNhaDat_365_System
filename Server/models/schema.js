@@ -88,13 +88,6 @@ const propertySchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
-  // Diện tích
-  Area: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-
   // Số phòng của Property
   NumberOfRooms: {
     type: Number,
@@ -106,11 +99,7 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // Liên kết đến bảng Category
-  Category: {
-    type: String,
-    required: true,
-  },
+ 
   // Liên kết đến bảng State
   State: {
     type: String,
@@ -124,18 +113,48 @@ const propertySchema = new mongoose.Schema({
   },
   Label:{
     type: String,
-    required: true,
+
   },
   // Liên kết đến bảng Location
   Location: {
     type: String,
     required: true,
   },
+  Type:{
+      bedroom:{
+        type: Number,
+        required: true,
+        min: 0,
+      },
+      bathroom:{
+        type: Number,
+        required: true,
+        min: 0,
+      },
+      yearBuilt:{
+        type: Number,
+        required: true,
+        min: 0,
+      },
+      garage:{
+        type: Number,
+        required: true,
+        min: 0,
+      },
+      sqft: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+      category:{
+        type: String,
+        required: true,
+      }
+  },
   // Liên kết đến bảng Amenities
   Amenities: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Amenities",
+      type: String,
       required: true,
     },
   ],
@@ -180,10 +199,6 @@ const locationSchema = new mongoose.Schema({
 const amenitiesSchema = new mongoose.Schema({
   // Tên của Amenities
   Name: {
-    type: String,
-    required: true,
-  },
-  Icon: {
     type: String,
     required: true,
   },
