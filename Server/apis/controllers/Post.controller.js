@@ -27,6 +27,7 @@ const postContentImage = async (req, res) => {
       NumberOfRooms,
       Category,
       State,
+      Label,
       Location,
       Amenities,
     } = req.body;
@@ -42,8 +43,10 @@ const postContentImage = async (req, res) => {
       NumberOfRooms,
       Category,
       State,
+      Label,
       Location,
       Amenities,
+      Label,
     ];
 
     if (
@@ -74,6 +77,7 @@ const postContentImage = async (req, res) => {
       NumberOfRooms,
       Category,
       State,
+      Label,
       Location,
       Account: req.decoded?.PhoneNumber,
       Amenities: parsedAmenities,
