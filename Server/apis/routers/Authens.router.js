@@ -13,12 +13,12 @@ const {
 const { resetOTP } = require("../../services/OTP.service");
 const {
   checkToken,
-  checktokenAPI,
+  checkTokenAPI,
   validateApiKey,
 } = require("../../middleware/middleware");
 
 router.post("/registerAD", validateApiKey, registerAD);
-router.post("/checktokenAPI", checktokenAPI);
+router.post("/checktokenAPI", checkTokenAPI);
 
 router.post("/register", register);
 router.post("/login", login);

@@ -8,29 +8,31 @@ const {
 
 const { logAction } = require("../utils/auditlog");
 const { decode } = require("jsonwebtoken");
+const getClientIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
 
 const addAmenities = async (req, res) => {
   try {
     const checkRole = await Account.findOne({
       PhoneNumber: req.decoded?.PhoneNumber,
     });
+    
     if (checkRole.Role !== "Admin" || checkRole.Role !== "Staff") {
       return res.status(403).json({ message: "Khong co quyen truy cap" });
     }
 
-    const { Name, Description, Icon } = req.body;
+    const { Name,  Icon } = req.body;
     const existingAmenities = await Amenities.findOne({ Name });
     if (existingAmenities) {
       return res.status(400).json({ message: "Tiện ích đã tồn tại" });
     }
-    if (!Name || !Description || !Icon) {
+    if (!Name ||  !Icon) {
       return res
         .status(400)
         .json({ message: "Vui lòng nhập đầy đủ thông tin" });
     }
     const newAmenities = new Amenities({
       Name,
-      Description,
       Icon,
     });
     await newAmenities.save();
@@ -43,8 +45,8 @@ const addAmenities = async (req, res) => {
     await logAction({
       action: "add_amenities",
       description: `Thêm tiện ích ${Name}`,
-      userId: req.decoded?._id,
-      userName: user.Name,
+      userId: user._id,
+      userName: user.FirstName+" "+user.LastName,
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
@@ -60,8 +62,8 @@ const addAmenities = async (req, res) => {
     await logAction({
       action: "add_amenities",
       description: "Lỗi khi thêm tiện ích",
-      userId: req.decoded?._id,
-      userName: user.Namedecoded?.Name,
+      userId: user._id,
+      userName: user.FirstName+" "+user.LastName,
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
@@ -72,6 +74,61 @@ const addAmenities = async (req, res) => {
     res.status(500).json({ message: "error", error: error.message });
   }
 };
+
+const removeAmenities = async (req, res) => {
+  try{
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+
+    if (checkRole.Role !== "Admin" || checkRole.Role !== "Staff") {
+      return res.status(403).json({ message: "Khong co quyen truy cap" });
+    }
+
+    const {id} = req.params;
+    const deleteAmenities = await Amenities.findByIdAndDelete(id);
+    if (!deleteAmenities) {
+      return res.status(404).json({ message: "Không tìm thấy tiện ích" });
+    }
+
+    getClientIp (req)
+
+    const user = await Account.findById(req.decoded?.PhoneNumber);
+
+    // Ghi lại hành động vào audit log
+    await logAction({
+      action: "remove_amenities",
+      description: `Xóa tiện ích ${id}`,
+      userId: user._id,
+      userName: user.FirstName+" "+user.LastName,
+      role: user.Role,
+      ipAddress: getClientIp(req),
+      previousData: null,
+      newData: null,
+      status: "success",
+    });
+    console.log("Xóa tiện ích thành công", deleteAmenities);
+    res.status(200).json({ message: "Xóa tiện ích thành công" });
+  }
+  catch (error) {
+    console.error("Lỗi trong removeAmenities:", error);
+    // Ghi lại lỗi vào audit log
+    getClientIp (req)
+    const user = await Account.findById(req.decoded?.PhoneNumber);
+    await logAction({
+      action: "remove_amenities",
+      description: "Lỗi khi xóa tiện ích",
+      userId: user._id,
+      userName: user.FirstName+" "+user.LastName,
+      role: user.Role,
+      ipAddress: getClientIp(req),
+      previousData: null,
+      newData: null,
+      status: "fail",
+    });
+    res.status(500).json({ message: "error", error });
+  }
+}
 
 const getListAmenities = async (req, res) => {
   try {
@@ -86,38 +143,9 @@ const getListAmenities = async (req, res) => {
     if (!amenities) {
       return res.status(404).json({ message: "Không tìm thấy tiện ích" });
     }
-    const getClientIp = (req) =>
-      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
-    const user = await Account.findById(req.decoded?.PhoneNumber);
-    await logAction({
-      action: "get_amenities",
-      description: "Lấy danh sách tiện ích",
-      userId: req.decoded?._id,
-      userName: user.Name,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: amenities,
-      status: "success",
-    });
+   
     res.status(200).json({ message: "Lấy tiện ích thành công", amenities });
   } catch (error) {
-    // Ghi lại lỗi vào audit log
-    const getClientIp = (req) =>
-      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
-    const user = await Account.findById(req.decoded?.PhoneNumber);
-
-    await logAction({
-      action: "get_amenities",
-      description: "Lỗi khi lấy danh sách tiện ích",
-      userId: req.decoded?._id,
-      userName: user.Name,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "fail",
-    });
     console.error("Lỗi trong getListAmenities:", error);
     res.status(500).json({ message: "error", error });
   }
@@ -158,8 +186,8 @@ const addLocation = async (req, res) => {
     await logAction({
       action: "add_location",
       description: `Thêm địa điểm ${Name}`,
-      userId: req.decoded?._id,
-      userName: user.Name,
+      userId: user._id,
+      userName: user.First+" "+user.LastName,
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
@@ -176,8 +204,8 @@ const addLocation = async (req, res) => {
     await logAction({
       action: "add_location",
       description: "Lỗi khi thêm địa điểm",
-      userId: req.decoded?._id,
-      userName: user.Name,
+      userId: user._id,
+      userName: user.First+" "+user.LastName,
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
@@ -209,7 +237,7 @@ const removeLocation = async (req, res) => {
       action: "remove_location",
       description: `Xóa địa điểm ${id}`,
       userId: req.decoded?._id,
-      userName: user.Name,
+      userName: user.FirstName+" "+user.LastName,
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
@@ -230,8 +258,8 @@ const removeLocation = async (req, res) => {
     await logAction({
       action: "remove_location",
       description: "Lỗi khi xóa địa điểm",
-      userId: req.decoded?._id,
-      userName: user.Name,
+      userId: user._id,
+      userName: user.FirstName+" "+user.LastName,
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
@@ -274,8 +302,8 @@ const addCategory = async (req, res) => {
     await logAction({
       action: "add_category",
       description: `Thêm danh mục ${Name}`,
-      userId: req.decoded?._id,
-      userName: user.Name,
+      userId: user._id,
+      userName: user.FirstName+" "+user.LastName,
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
@@ -293,8 +321,8 @@ const addCategory = async (req, res) => {
     await logAction({
       action: "add_category",
       description: "Lỗi khi thêm danh mục",
-      userId: req.decoded?._id,
-      userName: user.Name,
+      userId: user._id,
+      userName: user.FirstName+" "+user.LastName,
       role: user.Role,
       ipAddress: getClientIp(req),
       previousData: null,
@@ -326,7 +354,7 @@ const removeCategory = async (req, res) => {
     await logAction({
       action: "remove_category",
       description: `Xóa phân loại ${id}`,
-      userId: req.decoded?._id,
+      userId: user._id,
       userName: user.Name,
       role: user.Role,
       ipAddress: getClientIp(req),
@@ -345,7 +373,7 @@ const removeCategory = async (req, res) => {
     await logAction({
       action: "remove_category",
       description: "Lỗi khi xóa phân loại",
-      userId: req.decoded?._id,
+      userId: user._id,
       userName: user.Name,
       role: user.Role,
       ipAddress: getClientIp(req),
@@ -454,4 +482,8 @@ module.exports = {
   deleteNotification,
   getNotification,
   addAmenities,
+  getListAmenities,
+  removeAmenities,
+  removeLocation,
+  removeCategory,
 };
