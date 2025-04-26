@@ -1,5 +1,5 @@
 // utils/auditLogger.js
-const AuditLog = require("../../models/schema").AuditLog; // Import your AuditLog model
+const { AuditLog } = require("../../models/schema");
 
 const logAction = async ({
   action,
@@ -10,7 +10,7 @@ const logAction = async ({
   ipAddress,
   previousData,
   newData,
-  status = "success"
+  status = "success",
 }) => {
   try {
     await AuditLog.create({
@@ -22,7 +22,7 @@ const logAction = async ({
       ipAddress,
       previousData,
       newData,
-      status
+      status,
     });
   } catch (err) {
     console.error("Lỗi ghi audit log:", err);
