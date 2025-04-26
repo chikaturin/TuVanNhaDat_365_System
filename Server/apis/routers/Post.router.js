@@ -3,8 +3,8 @@ const router = express.Router();
 const upload = require("../../middleware/uploadMiddleware");
 const { checkToken } = require("../../middleware/middleware");
 const {
-  postContent,
-  // getContent,
+  // postContent,
+  getPropertyAD,
   getContentDetail,
   updateStatePost,
   deletePost,
@@ -13,9 +13,9 @@ const {
   getListPost,
 } = require("../controllers/Post.controller");
 
-router.post("/listings", checkToken, postContent);
-router.post("/postWithImage",upload, postContentImage);
-// router.get("/listings/", getContent);
+// router.post("/listings", checkToken, postContent);
+router.post("/postWithImage", upload, checkToken, postContentImage);
+router.get("/listings", checkToken, getPropertyAD);
 router.get("/listings/:_id", checkToken, getContentDetail);
 router.put("/listings/state/:_id", updateStatePost);
 router.delete("/listings/delete/:_id", deletePost);

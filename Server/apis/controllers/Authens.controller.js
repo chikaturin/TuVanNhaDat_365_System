@@ -133,8 +133,10 @@ const login = async (req, res) => {
 //Danh sách người dùng
 const listUser = async (req, res) => {
   try {
-    const admin = req.decoded?.Role;
-    if (!admin) {
+    const checkToken = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+    if (!checkToken.Role === "Admin" || !checkToken.Role === "Staff") {
       return res.status(401).json({ message: "Unauthorized" });
     }
     const user = await Account.find({ Role: { $ne: "Admin" } });
@@ -269,7 +271,7 @@ const updateRole = async (req, res) => {
     }
     await user.save();
 
-    return res.status(200).json({ message: "Cập nhật thành công", user });
+    return res.status(201).json({ message: "Cập nhật thành công", user });
   } catch (error) {
     console.error("Error updating role:", error);
     return res.status(500).json({
@@ -305,15 +307,18 @@ const BlockAccount = async (req, res) => {
 
     if (user.Status === "Active") {
       user.Status = "Block";
-    } else if (user.Role === "Block") {
+      await user.save();
+
+      return res
+        .status(201)
+        .json({ message: "Đã khóa tài khoản thành công", user });
+    } else {
       user.Status = "Active";
+      await user.save();
+      return res
+        .status(201)
+        .json({ message: "Đã mở khóa tài khoản thành công", user });
     }
-
-    await user.save();
-
-    return res
-      .status(201)
-      .json({ message: "Đã khóa tài khoản thành công", user });
   } catch (error) {
     console.error("Error updating role:", error);
     return res.status(500).json({
@@ -322,6 +327,7 @@ const BlockAccount = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   register,
   login,

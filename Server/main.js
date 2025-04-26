@@ -15,22 +15,16 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 
-const allowedOrigins = ["http://localhost:8888"];
+const allowedOrigins = ["http://localhost:8888", "http://localhost:3000"];
 
-// CORS
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) {
-        return callback(null, true);
-      }
-      if (
-        allowedOrigins.some((allowedOrigin) => origin.startsWith(allowedOrigin))
-      ) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       console.error("Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })

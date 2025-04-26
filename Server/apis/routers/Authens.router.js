@@ -10,7 +10,7 @@ const {
   registerAD,
   BlockAccount,
 } = require("../controllers/Authens.controller");
-const { sendOTP } = require("../../services/OTP.service");
+const { resetOTP } = require("../../services/OTP.service");
 const {
   checkToken,
   checkTokenAPI,
@@ -25,11 +25,12 @@ router.post("/login", login);
 router.get("/listingUser", validateApiKey, checkToken, listUser);
 router.get("/searchUser/:PhoneNumber", validateApiKey, checkToken, search_User);
 router.put("/updateRole", validateApiKey, checkToken, updateRole);
-router.put(
+router.get(
   "/blockAccount/:PhoneNumber",
   validateApiKey,
   checkToken,
   BlockAccount
 );
 router.get("/exportUser", validateApiKey, checkToken, exportUser);
+router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
 module.exports = router;

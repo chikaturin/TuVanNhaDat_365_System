@@ -17,6 +17,30 @@ const App = () => {
   const [hasFilled, setHasFilled] = useState(false); // Biến này để xác định form nào sẽ hiển thị
 
   // Kiểm tra và thiết lập reCAPTCHA chỉ một lần duy nhất
+
+  const fetchAPI = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8888/api/blockAccount/0922514123",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": "365nhadat",
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQaG9uZU51bWJlciI6IjA5MDA5MDA5MDAiLCJFbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsIkZpcnN0TmFtZSI6ImFkbWluIiwiTGFzdE5hbWUiOiJhZG1pbiIsImlhdCI6MTc0NTU1NjcxNCwiZXhwIjoxNzQ1NjQzMTE0fQ.G06pB_RSM4NOBXsOPow1TL35ulLJb5DwbmeY46FjDbU`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error("Error fetching API:", error);
+    }
+  };
+  useEffect(() => {
+    fetchAPI();
+  }, []);
+
   useEffect(() => {
     console.log("Checking for reCAPTCHA setup");
 
