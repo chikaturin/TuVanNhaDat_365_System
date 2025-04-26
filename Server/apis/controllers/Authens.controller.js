@@ -5,6 +5,7 @@ const ExcelJS = require("exceljs");
 const bcrypt = require("bcrypt");
 dotenv.config();
 const { logAction } = require("../utils/auditlog");
+const getClientIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
 const registerAD = async (req, res) => {
   try {
@@ -46,11 +47,36 @@ const registerAD = async (req, res) => {
     );
 
     await user.save();
+    
+    // Ghi log hành động
 
+    await logAction(
+      action = "Register Admin",
+      description = "Tạo tài khoản admin thành công"+user._id,
+      userId = user._id,
+      userName = user.FirstName + " " + user.LastName,
+      role = user.Role,
+      ipAddress = getClientIp(req),
+      previousData = null,
+      newData = user,
+      status = "success",
+    )
     return res
       .status(201)
       .json({ message: "Account created successfully", token });
   } catch (error) {
+    // Ghi log lỗi nếu có
+    await logAction(
+      action = "Register",
+      description = "Tạo tài khoản admin thất bại",
+      userId = null,
+      userName = null,
+      role = null,
+      ipAddress = getClientIp(req),
+      previousData = null,
+      newData = null,
+      status = "fail",
+    )
     console.error("Register error:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
@@ -122,6 +148,18 @@ const login = async (req, res) => {
       {
         expiresIn: "24h",
       }
+    );
+    // Ghi log hành động
+    await logAction(
+      action = "Login",
+      description = "Đăng nhập thành công"+user._id,
+      userId = user._id,
+      userName = user.FirstName + " " + user.LastName,
+      role = user.Role,
+      ipAddress = getClientIp(req),
+      previousData = null,
+      newData = null,
+      status = "success",
     );
     res.status(201).json({ message: "User logged in successfully", token });
   } catch (error) {

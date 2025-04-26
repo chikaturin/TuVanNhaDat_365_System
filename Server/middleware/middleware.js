@@ -19,7 +19,7 @@ const checkToken = (req, res, next) => {
   });
 };
 
-const checktokenAPI = (req, res, next) => {
+const checkTokenAPI = (req, res, next) => {
   // const authHeader = req.headers["authorization"];
   const { token } = req.body;
 
@@ -49,4 +49,4 @@ const validateApiKey = (req, res, next) => {
   next();
 };
 
-module.exports = { checkToken, validateApiKey, checktokenAPI };
+module.exports = { checkToken, validateApiKey, checkTokenAPI };
