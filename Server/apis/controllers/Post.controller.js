@@ -262,10 +262,14 @@ const getPropertyAD = async (req, res) => {
     const propertiesWithImages = posts.map((post) => {
       const images = propertiesImages
         .filter((img) => img.Property.toString() === post._id.toString())
-        .map((img) => img.Image);
+        .flatMap((img) =>
+          img.Image.map(
+            (buffer) => `data:image/webp;base64,${buffer.toString("base64")}`
+          )
+        );
       return {
         ...post,
-        Images: images.flat(),
+        Images: images,
       };
     });
 
