@@ -8,7 +8,8 @@ const {
 } = require("../../models/schema");
 const sharp = require("sharp");
 const { logAction } = require("../utils/auditlog");
-const getClientIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+const getClientIp = (req) =>
+  req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
 const postContentImage = async (req, res) => {
   try {
@@ -27,19 +28,40 @@ const postContentImage = async (req, res) => {
       sqft,
       category,
       State,
-      Label,
       Location,
       Amenities,
     } = req.body;
 
     const requiredFields = [
-      Title, Price, Description, Address, Length, Width,
-      NumberOfRooms, bedroom, bathroom, yearBuilt, garage, sqft, category,
-      State, Location, Amenities
+      Title,
+      Price,
+      Description,
+      Address,
+      Length,
+      Width,
+      NumberOfRooms,
+      bedroom,
+      bathroom,
+      yearBuilt,
+      garage,
+      sqft,
+      category,
+      State,
+      Location,
+      Amenities,
     ];
 
-    if (requiredFields.some(field => field === undefined || field === null || (Array.isArray(field) && field.length === 0))) {
-      return res.status(400).json({ message: "Vui lòng điền đầy đủ các trường." });
+    if (
+      requiredFields.some(
+        (field) =>
+          field === undefined ||
+          field === null ||
+          (Array.isArray(field) && field.length === 0)
+      )
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng điền đầy đủ các trường." });
     }
 
     // Đảm bảo Amenities luôn là mảng
@@ -62,7 +84,6 @@ const postContentImage = async (req, res) => {
       NumberOfRooms,
       Account: req.decoded?.PhoneNumber,
       State,
-      Label,
       Location,
       Amenities: parsedAmenities,
       Type: {
@@ -72,7 +93,7 @@ const postContentImage = async (req, res) => {
         garage,
         sqft,
         category,
-      }
+      },
     });
 
     const savedProperty = await property.save();
@@ -94,9 +115,10 @@ const postContentImage = async (req, res) => {
       await savedProperty.save();
     }
 
-    const files = req.files; // Danh sách ảnh upload từ multer
+    const files = req.files?.images;
 
     if (!files || files.length < 4 || files.length > 9) {
+      console.log("Lỗi số lượng file:", files.length);
       return res.status(400).json({
         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
       });
@@ -112,15 +134,20 @@ const postContentImage = async (req, res) => {
         webpImages.push(webpBuffer);
       }
 
+      console.log("Tổng số ảnh đã xử lý:", webpImages.length);
+
       const imageDoc = new PropertyImage({
         Image: webpImages,
         Property: savedProperty._id,
       });
 
       await imageDoc.save();
+      console.log("Đã lưu PropertyImage thành công");
     }
 
-    const user = await Account.findOne({ PhoneNumber: req.decoded?.PhoneNumber });
+    const user = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
 
     // Lưu audit log
     await logAction({
@@ -141,7 +168,9 @@ const postContentImage = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in postContentImage:", error);
-    const user = await Account.findOne({ PhoneNumber: req.decoded?.PhoneNumber });
+    const user = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
 
     await logAction({
       action: "create",
@@ -158,7 +187,6 @@ const postContentImage = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 // const getContent = async (req, res) => {
 //   try {
@@ -237,14 +265,6 @@ const getPropertyAD = async (req, res) => {
           localField: "Account",
           foreignField: "PhoneNumber",
           as: "Account",
-        },
-      },
-      {
-        $lookup: {
-          from: "amenities",
-          localField: "Amenities",
-          foreignField: "_id",
-          as: "Amenities",
         },
       },
     ]);
