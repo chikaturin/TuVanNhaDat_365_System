@@ -97,6 +97,24 @@ const postContentImage = async (req, res) => {
     });
 
     const savedProperty = await property.save();
+
+    const videoFile = req.files?.video?.[0];
+    console.log("videoFile ", videoFile);
+
+    if (videoFile) {
+      const videoBuffer = videoFile.buffer;
+      const videoMime = videoFile.mimetype;
+    
+      // Nếu muốn lưu vào MongoDB:
+      const propertyVideo = {
+        data: videoBuffer,
+        contentType: videoMime,
+      };
+
+      savedProperty.Video = propertyVideo;
+      await savedProperty.save();
+    }
+
     const files = req.files?.images;
 
     if (!files || files.length < 4 || files.length > 9) {
