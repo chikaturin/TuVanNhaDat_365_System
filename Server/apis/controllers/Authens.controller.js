@@ -65,18 +65,7 @@ const registerAD = async (req, res) => {
       .status(201)
       .json({ message: "Account created successfully", token });
   } catch (error) {
-    // Ghi log lỗi nếu có
-    await logAction(
-      action = "Register",
-      description = "Tạo tài khoản admin thất bại",
-      userId = null,
-      userName = null,
-      role = null,
-      ipAddress = getClientIp(req),
-      previousData = null,
-      newData = null,
-      status = "fail",
-    )
+  
     console.error("Register error:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
@@ -117,6 +106,17 @@ const register = async (req, res) => {
     );
 
     await user.save();
+    await logAction(
+      action = "Register",
+      description = "Tạo tài khoản  thành công"+user._id,
+      userId = user._id,
+      userName = user.FirstName + " " + user.LastName,
+      role = user.Role,
+      ipAddress = getClientIp(req),
+      previousData = null,
+      newData = user,
+      status = "success",
+    )
 
     return res
       .status(201)
