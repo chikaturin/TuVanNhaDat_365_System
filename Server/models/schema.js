@@ -44,11 +44,11 @@ const categorySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  //Hình ảnh của Category
-  Image: {
-    type: String,
-    required: true,
-  },
+  // //Hình ảnh của Category
+  // Image: {
+  //   type: String,
+  //   required: true,
+  // },
 });
 
 //------------------------------------------------------------------
@@ -99,7 +99,7 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
- 
+
   // Liên kết đến bảng State
   State: {
     type: String,
@@ -111,45 +111,51 @@ const propertySchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  Label:{
+  Label: {
     type: String,
-
   },
   // Liên kết đến bảng Location
   Location: {
     type: String,
     required: true,
   },
-  Type:{
-      bedroom:{
-        type: Number,
-        required: true,
-        min: 0,
-      },
-      bathroom:{
-        type: Number,
-        required: true,
-        min: 0,
-      },
-      yearBuilt:{
-        type: Number,
-        required: true,
-        min: 0,
-      },
-      garage:{
-        type: Number,
-        required: true,
-        min: 0,
-      },
-      sqft: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-      category:{
-        type: String,
-        required: true,
-      }
+  Type: {
+    bedroom: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    bathroom: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    yearBuilt: {
+      type: Number,
+      // required: true,
+      min: 0,
+    },
+    garage: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    sqft: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+  },
+  Video: {
+    type: {
+      data: Buffer,         // Dữ liệu video
+      contentType: String,  // Kiểu MIME của video
+    },
+    required: false,
   },
   // Liên kết đến bảng Amenities
   Amenities: [
@@ -184,11 +190,6 @@ const propertySchema = new mongoose.Schema({
 const locationSchema = new mongoose.Schema({
   // Tên của Location vd: Q7 RiverSide
   Name: {
-    type: String,
-    required: true,
-  },
-  // Mô tả của Location
-  Description: {
     type: String,
     required: true,
   },
