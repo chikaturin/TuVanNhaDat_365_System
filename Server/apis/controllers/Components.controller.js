@@ -42,18 +42,18 @@ const addAmenities = async (req, res) => {
       PhoneNumber: req.decoded?.PhoneNumber,
     });
 
-    // Ghi lại hành động vào audit log
-    await logAction({
-      action: "add_amenities",
-      description: `Thêm tiện ích ${Name}`,
-      userId: user._id,
-      userName: user.FirstName + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: newAmenities,
-      status: "success",
-    });
+    // // Ghi lại hành động vào audit log
+    // await logAction({
+    //   action: "add_amenities",
+    //   description: `Thêm tiện ích ${Name}`,
+    //   userId: user._id,
+    //   userName: user.FirstName + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: newAmenities,
+    //   status: "success",
+    // });
     res.status(201).json({ message: "Thêm tiện ích thành công" });
   } catch (error) {
     // Ghi lại lỗi vào audit log
@@ -62,17 +62,17 @@ const addAmenities = async (req, res) => {
     const user = await Account.findOne({
       PhoneNumber: req.decoded?.PhoneNumber,
     });
-    await logAction({
-      action: "add_amenities",
-      description: "Lỗi khi thêm tiện ích",
-      userId: user._id,
-      userName: user.FirstName + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "fail",
-    });
+    // await logAction({
+    //   action: "add_amenities",
+    //   description: "Lỗi khi thêm tiện ích",
+    //   userId: user._id,
+    //   userName: user.FirstName + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: null,
+    //   status: "fail",
+    // });
     console.error("Lỗi trong addAmenities:", error);
     res.status(500).json({ message: "error", error: error.message });
   }
@@ -135,17 +135,17 @@ const removeAmenities = async (req, res) => {
     });
 
     // Ghi lại hành động vào audit log
-    await logAction({
-      action: "remove_amenities",
-      description: `Xóa tiện ích ${id}`,
-      userId: user._id,
-      userName: user.FirstName + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "success",
-    });
+    // await logAction({
+    //   action: "remove_amenities",
+    //   description: `Xóa tiện ích ${id}`,
+    //   userId: user._id,
+    //   userName: user.FirstName + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: null,
+    //   status: "success",
+    // });
     console.log("Xóa tiện ích thành công", deleteAmenities);
     res.status(201).json({ message: "Xóa tiện ích thành công" });
   } catch (error) {
@@ -155,17 +155,17 @@ const removeAmenities = async (req, res) => {
     const user = await Account.findOne({
       PhoneNumber: req.decoded?.PhoneNumber,
     });
-    await logAction({
-      action: "remove_amenities",
-      description: "Lỗi khi xóa tiện ích",
-      userId: user._id,
-      userName: user.FirstName + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "fail",
-    });
+    // await logAction({
+    //   action: "remove_amenities",
+    //   description: "Lỗi khi xóa tiện ích",
+    //   userId: user._id,
+    //   userName: user.FirstName + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: null,
+    //   status: "fail",
+    // });
     res.status(500).json({ message: "error", error });
   }
 };
@@ -244,17 +244,17 @@ const addLocation = async (req, res) => {
     });
 
     // Ghi lại hành động vào audit log
-    await logAction({
-      action: "add_location",
-      description: `Thêm địa điểm ${Name}`,
-      userId: user._id,
-      userName: user.First + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: newLocation,
-      status: "success",
-    });
+    // await logAction({
+    //   action: "add_location",
+    //   description: `Thêm địa điểm ${Name}`,
+    //   userId: user._id,
+    //   userName: user.First + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: newLocation,
+    //   status: "success",
+    // });
     res.status(201).json({ message: "Thêm địa điểm thành công" });
   } catch (error) {
     // Ghi lại lỗi vào audit log
@@ -264,17 +264,17 @@ const addLocation = async (req, res) => {
       PhoneNumber: req.decoded?.PhoneNumber,
     });
 
-    await logAction({
-      action: "add_location",
-      description: "Lỗi khi thêm địa điểm",
-      userId: user._id,
-      userName: user.First + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "fail",
-    });
+    // await logAction({
+    //   action: "add_location",
+    //   description: "Lỗi khi thêm địa điểm",
+    //   userId: user._id,
+    //   userName: user.First + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: null,
+    //   status: "fail",
+    // });
     console.error("Lỗi trong addLocation:", error);
     res.status(500).json({ message: "error", error: error.message });
   }
@@ -331,17 +331,17 @@ const removeLocation = async (req, res) => {
 
     const getClientIp = (req) =>
       req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
-    await logAction({
-      action: "remove_location",
-      description: `Xóa địa điểm ${id}`,
-      userId: req.decoded?._id,
-      userName: user.FirstName + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "success",
-    });
+    // await logAction({
+    //   action: "remove_location",
+    //   description: `Xóa địa điểm ${id}`,
+    //   userId: req.decoded?._id,
+    //   userName: user.FirstName + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: null,
+    //   status: "success",
+    // });
     if (!deleteLocation) {
       return res.status(404).json({ message: "Không tìm thấy địa chỉ" });
     }
@@ -355,17 +355,17 @@ const removeLocation = async (req, res) => {
       PhoneNumber: req.decoded?.PhoneNumber,
     });
 
-    await logAction({
-      action: "remove_location",
-      description: "Lỗi khi xóa địa điểm",
-      userId: user._id,
-      userName: user.FirstName + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "fail",
-    });
+    // await logAction({
+    //   action: "remove_location",
+    //   description: "Lỗi khi xóa địa điểm",
+    //   userId: user._id,
+    //   userName: user.FirstName + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: null,
+    //   status: "fail",
+    // });
     res.status(500).json({ message: "error", error: error.message });
   }
 };
@@ -423,17 +423,17 @@ const addCategory = async (req, res) => {
       PhoneNumber: req.decoded?.PhoneNumber,
     });
 
-    await logAction({
-      action: "add_category",
-      description: "Lỗi khi thêm danh mục",
-      userId: user._id,
-      userName: user.FirstName + " " + user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "fail",
-    });
+    // await logAction({
+    //   action: "add_category",
+    //   description: "Lỗi khi thêm danh mục",
+    //   userId: user._id,
+    //   userName: user.FirstName + " " + user.LastName,
+    //   role: user.Role,
+    //   ipAddress: getClientIp(req),
+    //   previousData: null,
+    //   newData: null,
+    //   status: "fail",
+    // });
     res.status(500).json({ message: "error", error: error.message });
   }
 };
