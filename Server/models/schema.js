@@ -151,6 +151,13 @@ const propertySchema = new mongoose.Schema({
         required: true,
       }
   },
+  Video: {
+    type: {
+      data: Buffer,         // Dữ liệu video
+      contentType: String,  // Kiểu MIME của video
+    },
+    required: false,
+  },
   // Liên kết đến bảng Amenities
   Amenities: [
     {
