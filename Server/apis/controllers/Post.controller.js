@@ -71,7 +71,7 @@ const postContentImage = async (req, res) => {
         ? Amenities
         : JSON.parse(Amenities || "[]");
     } catch (err) {
-      return res.status(400).json({ error: "Trường Amenities không hợp lệ." });
+      return res.status(401).json({ error: "Trường Amenities không hợp lệ." });
     }
 
     const property = new Property({
@@ -101,7 +101,7 @@ const postContentImage = async (req, res) => {
 
     if (!files || files.length < 4 || files.length > 9) {
       console.log("Lỗi số lượng file:", files.length);
-      return res.status(400).json({
+      return res.status(402).json({
         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
       });
     }
