@@ -76,18 +76,6 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // Chiều dài
-  Length: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  // Chiều rộng
-  Width: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
   // Số phòng của Property
   NumberOfRooms: {
     type: Number,
@@ -152,8 +140,8 @@ const propertySchema = new mongoose.Schema({
   },
   Video: {
     type: {
-      data: Buffer,         // Dữ liệu video
-      contentType: String,  // Kiểu MIME của video
+      data: Buffer, // Dữ liệu video
+      contentType: String, // Kiểu MIME của video
     },
     required: false,
   },
