@@ -5,7 +5,8 @@ const ExcelJS = require("exceljs");
 const bcrypt = require("bcrypt");
 dotenv.config();
 const { logAction } = require("../utils/auditlog");
-const getClientIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+const getClientIp = (req) =>
+  req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
 const registerAD = async (req, res) => {
   try {
@@ -47,25 +48,24 @@ const registerAD = async (req, res) => {
     );
 
     await user.save();
-    
+
     // Ghi log hành động
 
     await logAction(
-      action = "Register Admin",
-      description = "Tạo tài khoản admin thành công"+user._id,
-      userId = user._id,
-      userName = user.FirstName + " " + user.LastName,
-      role = user.Role,
-      ipAddress = getClientIp(req),
-      previousData = null,
-      newData = user,
-      status = "success",
-    )
+      (action = "Register Admin"),
+      (description = "Tạo tài khoản admin thành công" + user._id),
+      (userId = user._id),
+      (userName = user.FirstName + " " + user.LastName),
+      (role = user.Role),
+      (ipAddress = getClientIp(req)),
+      (previousData = null),
+      (newData = user),
+      (status = "success")
+    );
     return res
       .status(201)
       .json({ message: "Account created successfully", token });
   } catch (error) {
-  
     console.error("Register error:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
@@ -106,17 +106,6 @@ const register = async (req, res) => {
     );
 
     await user.save();
-    await logAction(
-      action = "Register",
-      description = "Tạo tài khoản  thành công"+user._id,
-      userId = user._id,
-      userName = user.FirstName + " " + user.LastName,
-      role = user.Role,
-      ipAddress = getClientIp(req),
-      previousData = null,
-      newData = user,
-      status = "success",
-    )
 
     return res
       .status(201)
@@ -135,13 +124,12 @@ const login = async (req, res) => {
     const user = await Account.findOne({ PhoneNumber });
     if (!user) return res.status(400).json({ message: "User not found" });
     if (user.Status === "Block") {
-      return res.status(400).json({ message: "Tài khoản của bạn đã bị khoá" });
+      return res.status(401).json({ message: "Tài khoản của bạn đã bị khoá" });
     }
     const token = jwt.sign(
       {
         FirstName: user.FirstName,
         LastName: user.LastName,
-        Role: user.Role,
         PhoneNumber: user.PhoneNumber,
       },
       process.env.SECRET_KEY,
@@ -149,19 +137,17 @@ const login = async (req, res) => {
         expiresIn: "24h",
       }
     );
-    // Ghi log hành động
-    await logAction(
-      action = "Login",
-      description = "Đăng nhập thành công"+user._id,
-      userId = user._id,
-      userName = user.FirstName + " " + user.LastName,
-      role = user.Role,
-      ipAddress = getClientIp(req),
-      previousData = null,
-      newData = null,
-      status = "success",
-    );
-    res.status(201).json({ message: "User logged in successfully", token });
+    if (user.Role === "Admin" || user.Role === "Staff") {
+      return res.status(202).json({
+        message: "Login successfully",
+        token,
+        Role: user.Role,
+      });
+    } else {
+      return res
+        .status(201)
+        .json({ message: "User logged in successfully", token });
+    }
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error by login", error });
@@ -366,6 +352,20 @@ const BlockAccount = async (req, res) => {
   }
 };
 
+// const checkPhone = async (req, res) => {
+//   try {
+//     const { PhoneNumber } = req.params;
+//     const user = await Account.findOne({ PhoneNumber });
+//     if (!user) {
+//       return res.status(400).json({ message: "User not found" });
+//     }
+//     return res.status(201).json({ message: "User found", user });
+//   } catch (error) {
+//     console.error("Error checking phone:", error);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
 module.exports = {
   register,
   login,
@@ -375,4 +375,5 @@ module.exports = {
   updateRole,
   registerAD,
   BlockAccount,
+  // checkPhone,
 };
