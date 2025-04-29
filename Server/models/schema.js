@@ -76,18 +76,6 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // Chiều dài
-  Length: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  // Chiều rộng
-  Width: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
   // Số phòng của Property
   NumberOfRooms: {
     type: Number,
