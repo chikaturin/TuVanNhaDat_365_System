@@ -18,8 +18,6 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-      Length,
-      Width,
       NumberOfRooms,
       bedroom,
       bathroom,
@@ -37,8 +35,6 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-      Length,
-      Width,
       NumberOfRooms,
       bedroom,
       bathroom,
@@ -79,8 +75,6 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-      Length,
-      Width,
       NumberOfRooms,
       Account: req.decoded?.PhoneNumber,
       State,
@@ -104,7 +98,7 @@ const postContentImage = async (req, res) => {
     if (videoFile) {
       const videoBuffer = videoFile.buffer;
       const videoMime = videoFile.mimetype;
-    
+
       // Nếu muốn lưu vào MongoDB:
       const propertyVideo = {
         data: videoBuffer,
