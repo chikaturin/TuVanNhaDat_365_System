@@ -1,0 +1,129 @@
+
+-midleware
+{
+    checktoken:{
+        Status:{
+            405: "Token is required"
+            406: "Invalid token"
+        }
+        Explan:{
+            Token sẽ được yêu cầu khi router có phần "checktoken" và nó sẽ đưa ra các thông tin dữ liệu trong token VD: req.decoded.PhoneNumber = "09087600321"
+        }
+    }
+    validateApiKey:{
+        Status:{
+            407: "Thiếu API key"
+            408: "API key không hợp lệ"
+        }
+        Explan:{
+            API key sẽ được yêu cầu khi router có phần "validateApiKey" và nó để tránh các trường hợp lấy được các API dành cho Admin để truy suất dữ liệu từ chúng"
+        }
+    }
+}
+
+Status:{
+    500: "Internal server error by _____"  
+}
+
+-getContentDetail 
+{
+    method: GET
+    Router:{
+        "/api/listings/:id"
+        Authorization: Bearer Token       
+    }
+    Status:{
+        201: trả về property
+        401: "Không tìm thấy thông tin property"
+        402: "Không tìm thấy thông tin poster"
+    }
+    Explan:{
+        dùng để lấy chi tiết về 1 bài viết và tuỳ theo đăng nhập sẽ trả về thông tin người đăng
+    }
+}
+
+-postContentImage
+{
+    method: POST
+    Router:{
+        "/api/postWithImage"
+        Authorization: Bearer Token
+    }
+    Body:{
+        Title,
+        Price,
+        Description,
+        Address,
+        Length,
+        Width,
+        NumberOfRooms,
+        bedroom,
+        bathroom,
+        yearBuilt,
+        garage,
+        sqft,
+        category,
+        State,
+        Location,
+        Amenities[]: bỏ vào dạng danh sách,
+    }
+    Status:{
+        400: Điền thông tin các trường
+        401: Trường Amenities không hợp lệ.
+        402: Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.
+        201: Tạo property thành công!
+    }
+}
+
+-updateStatePost
+{
+   Method: "PUT",
+   Router: {
+    "path": "/api/listings/state/:id",
+    "Authorization": "Bearer Token"
+  },
+  "Status": {
+    "201": "update success",
+    "401": "Không tìm thấy thông tin",
+    "500": "Lỗi server"
+  }
+  Explan:{
+    dùng để cập nhật trạng thái của 1 bài viết
+  }
+}
+
+-deletePost
+{
+    "Method": "DELETE",
+    "Router": {
+        "path": "/api/listings/delete/:id",
+    },
+    "Status": {
+        "200": "Delete post success",
+        "401": "Can not find post",
+        "500": "error"
+    }
+    Explan:{
+        dùng để xóa 1 bài viết
+    }
+}
+
+-updatePost
+{
+    "Method": "PATCH",
+    "Router": {
+        "path": "/api/listings/update/:id",
+        "Authorization": "Bearer Token",
+        "Body": {
+        "type": "application/json",
+        "fields": "Các trường cần cập nhật của bài đăng (title, price, location...)"
+        }
+    },
+    "Status": {
+        "200": "Cập nhật thông tin thành công",
+        "404": "Không tìm thấy thông tin",
+        "500": "error"
+    }
+}
+
+

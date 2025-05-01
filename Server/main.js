@@ -1,41 +1,40 @@
-import express, { json } from "express";
-import cors from "cors";
-import { config } from "dotenv";
-import bodyParser from "body-parser";
-const jsonParser = bodyParser.json();
-const app = express();
-import cookieParser from "cookie-parser";
-import morgan from "morgan";
-import { createServer } from "http";
-// import db from "./models/db.js";
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
+const { createServer } = require("http");
+const { json } = require("body-parser");
+const db = require("./models/db");
 
-// middleware always put first
+const app = express();
+
 app.use(json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 
-const allowedOrigins = ["http://localhost:8888"];
+const allowedOrigins = ["http://localhost:8888", "http://localhost:3000"];
 
-// CORS
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) {
-        return callback(null, true);
-      }
-      if (
-        allowedOrigins.some((allowedOrigin) => origin.startsWith(allowedOrigin))
-      ) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       console.error("Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
 );
 
 //routers
+app.use("/api", require("./apis/routers/Authens.router"));
+app.use("/api", require("./apis/routers/Post.router"));
+app.use("/api", require("./apis/routers/Components.router"));
 
 // 🔥 Add CORS headers manually in case middleware fails
 app.use((req, res, next) => {
@@ -61,5 +60,3 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Now streaming on http://localhost:${PORT}`);
 });
-
-export default app;

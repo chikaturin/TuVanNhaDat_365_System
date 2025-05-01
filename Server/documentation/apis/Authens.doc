@@ -1,0 +1,155 @@
+
+-midleware
+{
+    checktoken:{
+        Status:{
+            405: "Token is required"
+            406: "Invalid token"
+        }
+        Explan:{
+            Token sẽ được yêu cầu khi router có phần "checktoken" và nó sẽ đưa ra các thông tin dữ liệu trong token VD: req.decoded.PhoneNumber = "09087600321"
+        }
+    }
+    validateApiKey:{
+        Status:{
+            407: "Thiếu API key"
+            408: "API key không hợp lệ"
+        }
+        Explan:{
+            API key sẽ được yêu cầu khi router có phần "validateApiKey" và nó để tránh các trường hợp lấy được các API dành cho Admin để truy suất dữ liệu từ chúng"
+        }
+    }
+}
+
+Status:{
+    500: "Internal server error by _____"  
+}
+
+-register:
+    method: POST
+    Router:{
+        /api/register
+        body:{
+            PhoneNumber, Email, FirstName, LastName, Password
+        }
+    }
+    Status:{
+        201: "Account created successfully"
+        400: "Thiếu các trường trông tin "
+        401: "Số điện thoại hoặc email đã tồn tại
+    }
+    Explan:{
+        Dùng để đăng ký các tài khoản User
+        Dùng sau khi đã đăng ký tài khoản bằng OTP trên firebase thành công. Sau khi thành công SĐT đã đăng ký cập nhập tiếp vào API register để đk tài khoản
+        existingAccount: là để kiểm tra các trường như PhoneNumber or Email có tồn tại hay không và trả về lỗi 
+        Khi mới đăng ký tài khoản thì mặc định tài khoản là user nếu sau này thành staff thì do admin cấp quyền 
+        Token duy trì trong 24h 
+        Khi tạo thành công sẽ lưu vào mongoose
+    }
+
+-login:
+    method: POST
+    Router:{
+        POST
+        /api/login
+        body:{
+            PhoneNumber
+        }
+    }
+    Status:{
+        201: "User logged in successfully"
+        400: "Tài khoản bạn bị khoá"
+    }
+    Explan:{
+        Khi đăng nhập bằng sđt và mã OTP bên firebase trên FE thì BE tiếp tục kiếm sự tồn tại tài khoản và trả về Token tương ứng
+        Nếu trong trường hợp tài khoản bị block thì không cho đăng nhập
+    }
+
+-listUser:
+    method: GET
+    Router:{
+        /api/listingUser
+        Header:
+            Authorization: Bearer Token
+            x-api-key:api key
+    }
+    Status:{
+        201: "Get user success", User
+        400: "Không tìm thấy dữ liệu"
+        401: "Unauthorized"
+    }
+    Để cho Admin kiểm soát các User đã đăng ký tài khoản bên mình 
+        +const user = await Account.find({ Role: { $ne: "Admin" } });
+    Tìm các user có Role không phải là Admin
+
+-searchUser:
+    method: GET
+    Router:{
+        /api/SearchUser/:PhoneNumber
+        Header:
+            Authorization: Bearer Token
+            x-api-key:api key
+    }
+    Status:{
+        201: "Get user success", User
+        400: "Không tìm thấy dữ liệu"
+        401: "Unauthorized"
+    }
+    Explan:{
+        Search theo số điện thoại của User
+        const user = await Account.findOne({PhoneNumber: PhoneNumber});
+        Là tìm các số tương ứng với số nhập vào trong mongodb
+    }
+
+-exportUser
+    method:GET
+    Router:{
+        /api/SearchUser/:PhoneNumber
+        Header:
+            Authorization: Bearer Token
+            x-api-key:api key
+    }
+    Status:{
+        401:"Không tìm thấy dữ liệu"
+    }
+    Explan:{
+        Export tất cả user ra file excel
+    }
+
+-updateRole
+    method:PUT
+    Router:{
+        /api/UpdateRole/:id
+        Header:
+            Authorization: Bearer Token
+            x-api-key:api key
+        Body:
+            PhoneNumber,Password    
+    }
+    Status:{
+        200: "Cập nhật thành công"
+        401: "Không đúng tài khoản"
+        402: "Bạn không quyền cập nhập vì sai mật khẩu"
+        403: "Không tìm thấy người dùng"
+        404: "Bạn không có quyền cập nhập cho Role này"
+    }
+    Explan:{
+        Cập nhật quyền cho người dùng từ nhân viên thành staff và ngược lại với password là password của admin nhằm mục đích truy xuất password tránh việc bị xâm chiếm máy và cập nhập sai
+    }
+
+-blockAccount
+    method:PUT
+    Router:{
+        /api/BlockAccount/:PhoneNumber
+        Header:
+            Authorization: Bearer Token
+            x-api-key:api key
+    }
+    Status:{
+        201: "Đã khóa tài khoản thành công"
+        400: "Bạn không có quyền cập nhập cho Role này"
+        402: "Bạn không có quyền khoá tài khoản"
+        403: "Không tìm thấy người dùng"
+    }
+
+        
