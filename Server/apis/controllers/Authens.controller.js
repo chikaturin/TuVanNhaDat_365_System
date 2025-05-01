@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
-const { Account } = require("../../models/schema");
+const { Account, AuditLog } = require("../../models/schema");
 const ExcelJS = require("exceljs");
 const bcrypt = require("bcrypt");
 dotenv.config();
@@ -98,15 +98,23 @@ const register = async (req, res) => {
       Role: "User",
     });
 
+    await user.save();
+
     // Tạo token JWT
     const token = jwt.sign(
       { PhoneNumber, Email, FirstName, LastName },
-      process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      process.env.SECRET_KEY
     );
 
-    await user.save();
+    const auditlog = new AuditLog({
+      action: "Đăng ký tài khoản",
+      userId: PhoneNumber,
+      userName: FirstName,
+      ipAddress: getClientIp(req),
+      status: "success",
+    });
 
+    await auditlog.save();
     return res
       .status(201)
       .json({ message: "Account created successfully", token });
@@ -132,10 +140,7 @@ const login = async (req, res) => {
         LastName: user.LastName,
         PhoneNumber: user.PhoneNumber,
       },
-      process.env.SECRET_KEY,
-      {
-        expiresIn: "24h",
-      }
+      process.env.SECRET_KEY
     );
     if (user.Role === "Admin" || user.Role === "Staff") {
       return res.status(202).json({
@@ -144,6 +149,14 @@ const login = async (req, res) => {
         Role: user.Role,
       });
     } else {
+      const auditlog = new AuditLog({
+        action: "Đăng nhập tài khoản",
+        userId: PhoneNumber,
+        userName: user.FirstName,
+        ipAddress: getClientIp(req),
+        status: "success",
+      });
+      await auditlog.save();
       return res
         .status(201)
         .json({ message: "User logged in successfully", token });
@@ -352,20 +365,6 @@ const BlockAccount = async (req, res) => {
   }
 };
 
-// const checkPhone = async (req, res) => {
-//   try {
-//     const { PhoneNumber } = req.params;
-//     const user = await Account.findOne({ PhoneNumber });
-//     if (!user) {
-//       return res.status(400).json({ message: "User not found" });
-//     }
-//     return res.status(201).json({ message: "User found", user });
-//   } catch (error) {
-//     console.error("Error checking phone:", error);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// };
-
 module.exports = {
   register,
   login,
@@ -375,5 +374,4 @@ module.exports = {
   updateRole,
   registerAD,
   BlockAccount,
-  // checkPhone,
 };

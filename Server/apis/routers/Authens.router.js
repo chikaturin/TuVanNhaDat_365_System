@@ -35,5 +35,4 @@ router.get(
 router.get("/exportUser", validateApiKey, checkToken, exportUser);
 router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
 
-// router.get("/checkPhone/:PhoneNumber", validateApiKey, checkPhone);
 module.exports = router;

@@ -1,4 +1,6 @@
 const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const { ObjectId } = require("mongoose").Types;
 dotenv.config();
 const {
   Property,
@@ -80,6 +82,7 @@ const postContentImage = async (req, res) => {
       State,
       Location,
       Amenities: parsedAmenities,
+      Label: "",
       Type: {
         bedroom,
         bathroom,
@@ -182,60 +185,131 @@ const postContentImage = async (req, res) => {
   }
 };
 
-// const getContent = async (req, res) => {
-//   try {
-//     const {
-//       keyWord,
-//       minPrice,
-//       maxPrice,
-//       Location,
-//       page = 1,
-//       pageSize = 20,
-//     } = req.query;
+const updatePost = async (req, res) => {
+  try {
+    const {
+      Title,
+      Price,
+      Description,
+      Address,
+      NumberOfRooms,
+      bedroom,
+      bathroom,
+      yearBuilt,
+      garage,
+      sqft,
+      category,
+      State,
+      Location,
+      Amenities,
+    } = req.body;
 
-//     const filter = {};
+    const requiredFields = [
+      Title,
+      Price,
+      Description,
+      Address,
+      NumberOfRooms,
+      bedroom,
+      bathroom,
+      yearBuilt,
+      garage,
+      sqft,
+      category,
+      State,
+      Location,
+      Amenities,
+    ];
 
-//     // Tìm kiếm theo từ khóa trong Title hoặc Description
-//     if (keyWord) {
-//       const regex = new RegExp(keyWord, "i");
-//       filter.$or = [
-//         { Title: { $regex: regex } },
-//         { Description: { $regex: regex } },
-//       ];
-//     }
+    if (
+      requiredFields.some(
+        (field) =>
+          field === undefined ||
+          field === null ||
+          (Array.isArray(field) && field.length === 0)
+      )
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng điền đầy đủ các trường." });
+    }
 
-//     // Lọc theo khoảng giá
-//     if (minPrice || maxPrice) {
-//       filter.Price = {};
-//       if (minPrice) filter.Price.$gte = parseInt(minPrice);
-//       if (maxPrice) filter.Price.$lte = parseInt(maxPrice);
-//     }
+    // Đảm bảo Amenities luôn là mảng
+    let parsedAmenities;
+    try {
+      parsedAmenities = Array.isArray(Amenities)
+        ? Amenities
+        : JSON.parse(Amenities || "[]");
+    } catch (err) {
+      return res.status(401).json({ error: "Trường Amenities không hợp lệ." });
+    }
+    const { _id } = req.params;
+    const oldProperty = await Property.findById(_id);
+    if (!oldProperty) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng." });
+    }
+    const property = {
+      Title,
+      Price,
+      Description,
+      Address,
+      NumberOfRooms,
+      Account: req.decoded?.PhoneNumber,
+      State,
+      Location,
+      Amenities: parsedAmenities,
+      Label: "",
+      Type: {
+        bedroom,
+        bathroom,
+        yearBuilt,
+        garage,
+        sqft,
+        category,
+      },
+    };
 
-//     // Lọc theo khu vực
-//     if (Location) {
-//       filter.Location = Location;
-//     }
+    const savedProperty = await Property.findByIdAndUpdate(_id, property, {
+      new: true,
+    });
 
-//     // Phân trang
-//     const skip = (parseInt(page) - 1) * parseInt(pageSize);
-//     const limit = parseInt(pageSize);
+    const files = req.files?.images;
+    if (!files || files.length < 4 || files.length > 9) {
+      return res.status(400).json({
+        error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
+      });
+    }
 
-//     const [total, listings] = await Promise.all([
-//       Property.countDocuments(filter),
-//       Property.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
-//     ]);
+    const webpImages = [];
+    for (const file of files) {
+      const webpBuffer = await sharp(file.buffer)
+        .webp({ quality: 80 })
+        .toBuffer();
+      webpImages.push(webpBuffer);
+    }
 
-//     return res.json({
-//       total,
-//       page: parseInt(page),
-//       pageSize: parseInt(pageSize),
-//       listings,
-//     });
-//   } catch (err) {
-//     console.error("Lỗi trong getContent:", err);
-//     return res.status(500).json({ message: "Lỗi server" });
-//   }
-// };
+    await PropertyImage.deleteMany({ Property: _id });
+
+    const imageDoc = new PropertyImage({
+      Image: webpImages,
+      Property: savedProperty._id,
+    });
+
+    await imageDoc.save();
+
+    const user = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+
+    res.status(201).json({
+      message: "Cập nhật bài đăng thành công!",
+      property: savedProperty,
+    });
+  } catch (error) {
+    console.error("Error in postContentImage:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 const getPropertyAD = async (req, res) => {
   try {
@@ -295,33 +369,125 @@ const getPropertyAD = async (req, res) => {
     return res.status(500).json({ message: "Lỗi server" });
   }
 };
-
-const getContentDetail = async (req, res) => {
+const getProperty = async (req, res) => {
   try {
-    const { _id } = req.params;
-    const inforUser = req.decoded?.Role;
-    const property = await Property.findById(_id);
-    const inforPoster = await User.findById(property.User);
-    if (!property) {
-      return res
-        .status(401)
-        .json({ message: "Không tìm thấy thông tin property" });
-    }
-    if (inforUser === "Admin" || inforUser === "Staff") {
-      if (!inforPoster) {
-        return res
-          .status(402)
-          .json({ message: "Không tìm thấy thông tin poster" });
-      }
-      return res.json({ property, inforPoster });
-    }
-    return res.status(201).json({
-      property,
-      firstName: inforPoster.FirstName,
-      lastName: inforPoster.LastName,
+    const checkToken = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
     });
-  } catch (err) {
-    console.error("Lỗi trong getContentDetail:", err);
+
+    if (
+      !checkToken ||
+      (checkToken.Role !== "Admin" && checkToken.Role !== "Staff")
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Lấy danh sách property chưa duyệt + join Account
+    const posts = await Property.aggregate([
+      { $match: { Approved: { $ne: false } } },
+      {
+        $lookup: {
+          from: "accounts",
+          localField: "Account",
+          foreignField: "PhoneNumber",
+          as: "Account",
+        },
+      },
+    ]);
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng" });
+    }
+
+    // Lấy tất cả ảnh liên quan đến property
+    const propertiesImages = await PropertyImage.find({
+      Property: { $in: posts.map((post) => post._id) },
+    });
+
+    // Gộp ảnh vào từng post
+    const propertiesWithImages = posts.map((post) => {
+      const images = propertiesImages
+        .filter((img) => img.Property.toString() === post._id.toString())
+        .flatMap((img) =>
+          img.Image.map(
+            (buffer) => `data:image/webp;base64,${buffer.toString("base64")}`
+          )
+        );
+      return {
+        ...post,
+        Images: images,
+      };
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Lấy bài đăng thành công", data: propertiesWithImages });
+  } catch (error) {
+    console.error("Lỗi trong getPropertyAD:", error);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+const getPropertyDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const checkToken = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+
+    if (
+      !checkToken ||
+      (checkToken.Role !== "Admin" && checkToken.Role !== "Staff")
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const posts = await Property.aggregate([
+      {
+        $match: {
+          Approved: { $ne: true },
+          _id: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "accounts",
+          localField: "Account",
+          foreignField: "PhoneNumber",
+          as: "Account",
+        },
+      },
+    ]);
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng" });
+    }
+
+    // Lấy tất cả ảnh liên quan đến property
+    const propertiesImages = await PropertyImage.find({
+      Property: { $in: posts.map((post) => post._id) },
+    });
+
+    // Gộp ảnh vào từng post
+    const propertiesWithImages = posts.map((post) => {
+      const images = propertiesImages
+        .filter((img) => img.Property.toString() === post._id.toString())
+        .flatMap((img) =>
+          img.Image.map(
+            (buffer) => `data:image/webp;base64,${buffer.toString("base64")}`
+          )
+        );
+      return {
+        ...post,
+        Images: images,
+      };
+    });
+
+    return res
+      .status(201)
+      .json({ message: "Lấy bài đăng thành công", data: propertiesWithImages });
+  } catch (error) {
+    console.error("Lỗi trong getPropertyAD:", error);
     return res.status(500).json({ message: "Lỗi server" });
   }
 };
@@ -360,27 +526,139 @@ const deletePost = async (req, res) => {
   }
 };
 
-// Cập nhật bài đăng
-const updatePost = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateFields = req.body;
+// const updatePost = async (req, res) => {
+//   try {
+//     const {
+//       Title,
+//       Price,
+//       Description,
+//       Address,
+//       NumberOfRooms,
+//       bedroom,
+//       bathroom,
+//       yearBuilt,
+//       garage,
+//       sqft,
+//       category,
+//       State,
+//       Location,
+//       Amenities,
+//     } = req.body;
 
-    const post = await Property.findByIdAndUpdate(id, updateFields, {
-      new: true,
-      runValidators: true,
-    });
+//     // Check for missing fields
+//     const requiredFields = {
+//       Title,
+//       Price,
+//       Description,
+//       Address,
+//       NumberOfRooms,
+//       bedroom,
+//       bathroom,
+//       yearBuilt,
+//       garage,
+//       sqft,
+//       category,
+//       State,
+//       Location,
+//       Amenities,
+//     };
 
-    if (!post) {
-      return res.status(404).json({ message: "Không tìm thấy thông tin" });
-    }
+//     const missingFields = Object.keys(requiredFields).filter(
+//       (key) =>
+//         requiredFields[key] === undefined ||
+//         requiredFields[key] === null ||
+//         (Array.isArray(requiredFields[key]) && requiredFields[key].length === 0)
+//     );
 
-    res.status(200).json({ message: "Cập nhật thông tin thành công" });
-  } catch (error) {
-    console.error("Lỗi trong updatePost:", error);
-    res.status(500).json({ message: "error", error });
-  }
-};
+//     if (missingFields.length > 0) {
+//       return res.status(400).json({
+//         message: `Vui lòng điền đầy đủ các trường: ${missingFields.join(
+//           ", "
+//         )}.`,
+//       });
+//     }
+
+//     // Parse Amenities
+//     let parsedAmenities;
+//     try {
+//       parsedAmenities = Array.isArray(Amenities)
+//         ? Amenities
+//         : JSON.parse(Amenities || "[]");
+//     } catch (err) {
+//       return res.status(400).json({ error: "Trường Amenities không hợp lệ." });
+//     }
+
+//     const propertyId = req.params._id;
+//     const updatedData = {
+//       Title,
+//       Price,
+//       Description,
+//       Address,
+//       NumberOfRooms,
+//       Account: req.decoded?.PhoneNumber,
+//       State,
+//       Location,
+//       Amenities: parsedAmenities,
+//       Label: "",
+//       Type: {
+//         bedroom,
+//         bathroom,
+//         yearBuilt,
+//         garage,
+//         sqft,
+//         category,
+//       },
+//     };
+
+//     const oldProperty = await Property.findById(propertyId);
+//     if (!oldProperty) {
+//       return res.status(404).json({ message: "Không tìm thấy bài đăng." });
+//     }
+
+//     const savedProperty = await Property.findByIdAndUpdate(
+//       propertyId,
+//       updatedData,
+//       { new: true }
+//     );
+
+//     // Handle image uploads
+//     const files = req.files;
+//     if (!files || files.length < 4 || files.length > 9) {
+//       return res.status(400).json({
+//         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
+//       });
+//     }
+
+//     const webpImages = [];
+//     for (const file of files) {
+//       const webpBuffer = await sharp(file.buffer)
+//         .webp({ quality: 80 })
+//         .toBuffer();
+//       webpImages.push(webpBuffer);
+//     }
+
+//     await PropertyImage.deleteMany({ Property: savedProperty._id });
+
+//     const imageDoc = new PropertyImage({
+//       Image: webpImages,
+//       Property: savedProperty._id,
+//     });
+
+//     await imageDoc.save();
+
+//     const user = await Account.findOne({
+//       PhoneNumber: req.decoded?.PhoneNumber,
+//     });
+
+//     res.status(200).json({
+//       message: "Cập nhật bài đăng thành công!",
+//       property: savedProperty,
+//     });
+//   } catch (error) {
+//     console.error("Error in updatePost:", error);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
 
 const getListPost = async (req, res) => {
   try {
@@ -408,10 +686,10 @@ const getListPost = async (req, res) => {
 };
 
 module.exports = {
-  // postContent,
   postContentImage,
   getPropertyAD,
-  getContentDetail,
+  getProperty,
+  getPropertyDetail,
   updateStatePost,
   deletePost,
   updatePost,

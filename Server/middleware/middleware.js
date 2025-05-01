@@ -20,7 +20,6 @@ const checkToken = (req, res, next) => {
 };
 
 const checkTokenAPI = (req, res, next) => {
-  // const authHeader = req.headers["authorization"];
   const { token } = req.body;
 
   if (!token) {
