@@ -18,9 +18,6 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-      Length,
-      Width,
-      NumberOfRooms,
       bedroom,
       bathroom,
       yearBuilt,
@@ -31,15 +28,12 @@ const postContentImage = async (req, res) => {
       Location,
       Amenities,
     } = req.body;
-
+    
     const requiredFields = [
       Title,
       Price,
       Description,
       Address,
-      Length,
-      Width,
-      NumberOfRooms,
       bedroom,
       bathroom,
       yearBuilt,
@@ -79,9 +73,6 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-      Length,
-      Width,
-      NumberOfRooms,
       Account: req.decoded?.PhoneNumber,
       State,
       Location,
