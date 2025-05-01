@@ -5,7 +5,9 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "dev": "nodemon main.js",
+    "build": "echo 'skip build'",
+    "start": "node main.js"
   },
   "keywords": [],
   "author": "",

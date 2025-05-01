@@ -9,17 +9,14 @@ const db = require("./models/db");
 
 const app = express();
 
-// middleware always put first
 app.use(json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 
-const allowedOrigins = [
-  "http://localhost:8888",
-  "http://localhost:3000",
-  "https://4b0a-2a09-bac5-d46d-e6-00-17-380.ngrok-free.app",
-];
+const allowedOrigins = ["http://localhost:8888", "http://localhost:3000"];
 
 app.use(
   cors({
@@ -63,3 +60,4 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Now streaming on http://localhost:${PORT}`);
 });
+module.exports = app;

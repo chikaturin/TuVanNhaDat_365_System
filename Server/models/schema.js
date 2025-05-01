@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const auditLogSchema = new mongoose.Schema({
   action: { type: String, required: true },
   description: { type: String },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+  userId: { type: String },
   userName: { type: String },
   role: { type: String },
   resource: { type: String },
@@ -92,7 +92,7 @@ const propertySchema = new mongoose.Schema({
   State: {
     type: String,
     required: true,
-    enum: ["Cho thuê", "Đã thuê", "Bán", "Đã bán"],
+    enum: ["Cho thuê", "Đã thuê", "Bán", "Đăng bán"],
   },
   // Trạng thái hiển thị phần duyệt bài
   Approved: {
