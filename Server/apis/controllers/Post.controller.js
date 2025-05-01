@@ -371,18 +371,6 @@ const getPropertyAD = async (req, res) => {
 };
 const getProperty = async (req, res) => {
   try {
-    const checkToken = await Account.findOne({
-      PhoneNumber: req.decoded?.PhoneNumber,
-    });
-
-    if (
-      !checkToken ||
-      (checkToken.Role !== "Admin" && checkToken.Role !== "Staff")
-    ) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    // Lấy danh sách property chưa duyệt + join Account
     const posts = await Property.aggregate([
       { $match: { Approved: { $ne: false } } },
       {
@@ -399,12 +387,10 @@ const getProperty = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy bài đăng" });
     }
 
-    // Lấy tất cả ảnh liên quan đến property
     const propertiesImages = await PropertyImage.find({
       Property: { $in: posts.map((post) => post._id) },
     });
 
-    // Gộp ảnh vào từng post
     const propertiesWithImages = posts.map((post) => {
       const images = propertiesImages
         .filter((img) => img.Property.toString() === post._id.toString())
