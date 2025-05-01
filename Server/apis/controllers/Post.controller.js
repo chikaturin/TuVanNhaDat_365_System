@@ -98,7 +98,7 @@ const postContentImage = async (req, res) => {
     if (videoFile) {
       const videoBuffer = videoFile.buffer;
       const videoMime = videoFile.mimetype;
-    
+
       // Nếu muốn lưu vào MongoDB:
       const propertyVideo = {
         data: videoBuffer,
