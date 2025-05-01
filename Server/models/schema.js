@@ -76,12 +76,6 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // Số phòng của Property
-  NumberOfRooms: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
   // Liên kết đến bảng Account
   Account: {
     type: String,
@@ -149,7 +143,6 @@ const propertySchema = new mongoose.Schema({
   Amenities: [
     {
       type: String,
-      required: true,
     },
   ],
 });
