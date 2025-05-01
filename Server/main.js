@@ -3,7 +3,6 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
-const { createServer } = require("http");
 const { json } = require("body-parser");
 const db = require("./models/db");
 
@@ -12,7 +11,6 @@ const app = express();
 app.use(json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 
@@ -31,12 +29,12 @@ app.use(
   })
 );
 
-//routers
+// Routers
 app.use("/api", require("./apis/routers/Authens.router"));
 app.use("/api", require("./apis/routers/Post.router"));
 app.use("/api", require("./apis/routers/Components.router"));
 
-// 🔥 Add CORS headers manually in case middleware fails
+// Manual CORS fallback
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:8081");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -45,18 +43,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", (req, res) => res.send("Express on local"));
+app.get("/", (req, res) => res.send("Express on Vercel"));
 
-// Xử lý lỗi
+// Error handler
 app.use((err, req, res, next) => {
   console.log(err);
   res.status(500).send("Something broke!");
-  next();
 });
 
-const server = createServer(app);
-const PORT = process.env.PORT || 8080;
-
-server.listen(PORT, () => {
-  console.log(`Now streaming on http://localhost:${PORT}`);
-});
+module.exports = app;
