@@ -172,13 +172,6 @@ const removeAmenities = async (req, res) => {
 
 const getListAmenities = async (req, res) => {
   try {
-    const checkRole = await Account.findOne({
-      PhoneNumber: req.decoded?.PhoneNumber,
-    });
-    if (checkRole.Role !== "Admin" && checkRole.Role !== "Staff") {
-      return res.status(403).json({ message: "Khong co quyen truy cap" });
-    }
-
     const amenities = await Amenities.find();
     if (!amenities) {
       return res.status(404).json({ message: "Không tìm thấy tiện ích" });
@@ -194,12 +187,6 @@ const getListAmenities = async (req, res) => {
 // -------------------------------------------------Location------------------------------------------------
 const getLocation = async (req, res) => {
   try {
-    const checkRole = await Account.findOne({
-      PhoneNumber: req.decoded?.PhoneNumber,
-    });
-    if (checkRole.Role !== "Admin" && checkRole.Role !== "Staff") {
-      return res.status(403).json({ message: "Khong co quyen truy cap" });
-    }
     const locations = await Location.find();
     if (!locations) {
       return res.status(404).json({ message: "Không tìm thấy địa điểm" });
@@ -498,12 +485,6 @@ const removeCategory = async (req, res) => {
 
 const listCategory = async (req, res) => {
   try {
-    const checkRole = await Account.findOne({
-      PhoneNumber: req.decoded?.PhoneNumber,
-    });
-    if (checkRole.Role !== "Admin" && checkRole.Role !== "Staff") {
-      return res.status(403).json({ message: "Khong co quyen truy cap" });
-    }
     const categories = await Category.find();
     if (!categories) {
       return res.status(404).json({ message: "Không tìm thấy danh mục" });
