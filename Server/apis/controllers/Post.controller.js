@@ -20,7 +20,6 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-      NumberOfRooms,
       bedroom,
       bathroom,
       yearBuilt,
@@ -37,7 +36,6 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-      NumberOfRooms,
       bedroom,
       bathroom,
       yearBuilt,
@@ -69,7 +67,7 @@ const postContentImage = async (req, res) => {
         ? Amenities
         : JSON.parse(Amenities || "[]");
     } catch (err) {
-      return res.status(401).json({ error: "Trường Amenities không hợp lệ." });
+      return res.status(400).json({ error: "Trường Amenities không hợp lệ." });
     }
 
     const property = new Property({
@@ -77,12 +75,10 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-      NumberOfRooms,
       Account: req.decoded?.PhoneNumber,
       State,
       Location,
       Amenities: parsedAmenities,
-      Label: "",
       Type: {
         bedroom,
         bathroom,
@@ -116,7 +112,7 @@ const postContentImage = async (req, res) => {
 
     if (!files || files.length < 4 || files.length > 9) {
       console.log("Lỗi số lượng file:", files.length);
-      return res.status(402).json({
+      return res.status(401).json({
         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
       });
     }
@@ -145,19 +141,19 @@ const postContentImage = async (req, res) => {
     const user = await Account.findOne({
       PhoneNumber: req.decoded?.PhoneNumber,
     });
-
-    // Lưu audit log
-    await logAction({
-      action: "create",
-      description: "Tạo bài đăng mới thành công " + savedProperty._id,
-      userId: user._id,
-      userName: user.Name,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: savedProperty,
-      status: "success",
-    });
+    if (user) {
+      await logAction({
+        action: "create",
+        description: "Tạo bài đăng mới thành công " + savedProperty._id,
+        userId: req.decoded?.PhoneNumber,
+        userName: user.FirstName + " " + user.LastName,
+        role: user.Role,
+        ipAddress: getClientIp(req),
+        previousData: null,
+        newData: savedProperty,
+        status: "success",
+      });
+    }
 
     res.status(201).json({
       message: "Tạo property thành công!",
@@ -165,21 +161,6 @@ const postContentImage = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in postContentImage:", error);
-    const user = await Account.findOne({
-      PhoneNumber: req.decoded?.PhoneNumber,
-    });
-
-    await logAction({
-      action: "create",
-      description: "Lỗi khi tạo bài đăng mới",
-      userId: user._id,
-      userName: user.Name,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "fail",
-    });
 
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -192,7 +173,6 @@ const updatePost = async (req, res) => {
       Price,
       Description,
       Address,
-      NumberOfRooms,
       bedroom,
       bathroom,
       yearBuilt,
@@ -483,7 +463,7 @@ const updateStatePost = async (req, res) => {
   try {
     const { id } = req.params;
     const post = await Property.findByIdAndUpdate(id, {
-      $set: (Approved = true),
+      $set: { Approved: true },
     });
 
     if (!post) {
