@@ -463,7 +463,7 @@ const updateStatePost = async (req, res) => {
   try {
     const { id } = req.params;
     const post = await Property.findByIdAndUpdate(id, {
-      $set: (Approved = true),
+      $set: { Approved: true },
     });
 
     if (!post) {

@@ -19,8 +19,8 @@ router.post("/postWithImage", upload, checkToken, postContentImage);
 router.get("/getPropertyAD", checkToken, getPropertyAD);
 router.get("/listings", getProperty);
 router.get("/listings/:id", checkToken, getPropertyDetail);
-router.put("/listings/state/:_id", updateStatePost);
-router.delete("/listings/delete/:_id", deletePost);
+router.get("/listings-state/:id", checkToken, updateStatePost);
+router.delete("/listings-delete/:id", deletePost);
 router.put("/listings-update/:_id", upload, checkToken, updatePost);
 router.get("/listings", getListPost);
 
