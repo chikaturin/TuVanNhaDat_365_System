@@ -16,7 +16,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 
-const allowedOrigins = ["http://localhost:8888", "http://localhost:3000"];
+const allowedOrigins = [
+  "http://localhost:8888",
+  "http://localhost:3000",
+  "https://3e7f-171-252-188-150.ngrok-free.app",
+];
 
 app.use(
   cors({
