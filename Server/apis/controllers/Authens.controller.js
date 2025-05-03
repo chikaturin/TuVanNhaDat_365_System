@@ -176,7 +176,7 @@ const listUser = async (req, res) => {
     if (!checkToken.Role === "Admin" || !checkToken.Role === "Staff") {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const user = await Account.find({ Role: { $ne: "Admin" } });
+    const user = await Account.find();
 
     if (!user) {
       res.status(400).json({ message: "Lỗi không tìm thấy dữ liệu" });
