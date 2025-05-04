@@ -19,11 +19,8 @@ app.use(morgan("combined"));
 const allowedOrigins = [
   "http://localhost:8888",
   "http://localhost:3000",
-<<<<<<< HEAD
   "https://a813-27-2-128-129.ngrok-free.app",
-=======
   "https://3e7f-171-252-188-150.ngrok-free.app",
->>>>>>> 82ef9e8488efa5841f24a9b837647c07f2c426f4
 ];
 
 app.use(
