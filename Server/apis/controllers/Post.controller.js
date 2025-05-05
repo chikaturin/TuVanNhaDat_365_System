@@ -29,6 +29,8 @@ const postContentImage = async (req, res) => {
       State,
       Location,
       Amenities,
+      interior_condition,
+      deposit_amount,
     } = req.body;
 
     const requiredFields = [
@@ -45,6 +47,8 @@ const postContentImage = async (req, res) => {
       State,
       Location,
       Amenities,
+      interior_condition,
+      deposit_amount,
     ];
 
     if (
@@ -56,7 +60,7 @@ const postContentImage = async (req, res) => {
       )
     ) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "Vui lòng điền đầy đủ các trường." });
     }
 
@@ -79,6 +83,8 @@ const postContentImage = async (req, res) => {
       State,
       Location,
       Amenities: parsedAmenities,
+      interior_condition,
+      deposit_amount,
       Type: {
         bedroom,
         bathroom,
@@ -89,24 +95,30 @@ const postContentImage = async (req, res) => {
       },
     });
 
-    const savedProperty = await property.save();
-
-    const videoFile = req.files?.video?.[0];
-    console.log("videoFile ", videoFile);
-
-    if (videoFile) {
-      const videoBuffer = videoFile.buffer;
-      const videoMime = videoFile.mimetype;
-
-      // Nếu muốn lưu vào MongoDB:
-      const propertyVideo = {
-        data: videoBuffer,
-        contentType: videoMime,
-      };
-
-      savedProperty.Video = propertyVideo;
-      await savedProperty.save();
+    if (category === "Chung cư") {
+      const { Balcony_direction, Type_apartment, maindoor_direction } =
+        req.body;
+      if (!Balcony_direction || !Type_apartment || !maindoor_direction) {
+        return res.status(401).json({
+          message: "Vui lòng điền đầy đủ các trường cho loại hình chung cư",
+        });
+      }
+      property.maindoor_direction = maindoor_direction;
+      property.Balcony_direction = Balcony_direction;
+      property.Type_apartment = Type_apartment;
     }
+
+    if (State === "Đăng bán") {
+      const { type_documents } = req.body;
+      if (!type_documents) {
+        return res.status(401).json({
+          message: "Vui lòng điền đầy đủ các trường cho loại hình bán",
+        });
+      }
+      property.type_documents = type_documents;
+    }
+
+    const savedProperty = await property.save();
 
     const files = req.files?.images;
 

@@ -73,8 +73,8 @@ const registerAD = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    const { PhoneNumber, Email, FirstName, LastName } = req.body;
-    if (!PhoneNumber || !Email || !FirstName || !LastName) {
+    const { PhoneNumber, Email, FirstName, LastName, Password } = req.body;
+    if (!PhoneNumber || !Email || !FirstName || !LastName || !Password) {
       return res
         .status(400)
         .json({ message: "Vui lòng nhập đầy đủ thông tin" });
@@ -92,6 +92,7 @@ const register = async (req, res) => {
     const user = new Account({
       PhoneNumber,
       Email,
+      Password: await bcrypt.hash(Password, 10),
       FirstName,
       LastName,
       Status: "Active",
@@ -128,27 +129,47 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { PhoneNumber } = req.body;
+    const { PhoneNumber, Password } = req.body;
     const user = await Account.findOne({ PhoneNumber });
-    if (!user) return res.status(400).json({ message: "User not found" });
+
+    if (!PhoneNumber || !Password) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ thông tin" });
+    }
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
     if (user.Status === "Block") {
       return res.status(401).json({ message: "Tài khoản của bạn đã bị khoá" });
     }
+
+    const isPasswordCorrect = await bcrypt.compare(Password, user.Password);
+    if (!isPasswordCorrect) {
+      return res.status(402).json({ message: "Sai mật khẩu" });
+    }
+
+    const expiresIn = 24 * 60 * 60 * 1000; // 24h
+
     const token = jwt.sign(
       {
+        Email: user.Email,
         FirstName: user.FirstName,
         LastName: user.LastName,
         PhoneNumber: user.PhoneNumber,
       },
-      process.env.SECRET_KEY
+      process.env.SECRET_KEY,
+      { expiresIn: "24h" }
     );
-    if (user.Role === "Admin" || user.Role === "Staff") {
-      return res.status(202).json({
-        message: "Login successfully",
-        token,
-        Role: user.Role,
-      });
-    } else {
+
+    res.cookie("rl_uns", user, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "Lax",
+      maxAge: expiresIn,
+    });
+
+    if (user.Role !== "Admin" && user.Role !== "Staff") {
       const auditlog = new AuditLog({
         action: "Đăng nhập tài khoản",
         userId: PhoneNumber,
@@ -157,13 +178,38 @@ const login = async (req, res) => {
         status: "success",
       });
       await auditlog.save();
-      return res
-        .status(201)
-        .json({ message: "User logged in successfully", token });
     }
+
+    return res.status(201).json({
+      message: "Login successfully",
+      token,
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error by login", error });
+  }
+};
+
+const me = async (req, res) => {
+  const User = req.cookies.rl_uns;
+  if (!User) return res.status(202).json({ message: "Chưa đăng nhập" });
+
+  try {
+    res.status(201).json({
+      Role: User.Role,
+    });
+  } catch (err) {
+    return res.status(401).json({ message: "User không hợp lệ" });
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    res.clearCookie("rl_uns");
+    res.status(201).json({ message: "Logout successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Internal server error by logout" });
   }
 };
 
@@ -176,7 +222,7 @@ const listUser = async (req, res) => {
     if (!checkToken.Role === "Admin" || !checkToken.Role === "Staff") {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const user = await Account.find({ Role: { $ne: "Admin" } });
+    const user = await Account.find();
 
     if (!user) {
       res.status(400).json({ message: "Lỗi không tìm thấy dữ liệu" });
@@ -374,4 +420,6 @@ module.exports = {
   updateRole,
   registerAD,
   BlockAccount,
+  me,
+  logout,
 };

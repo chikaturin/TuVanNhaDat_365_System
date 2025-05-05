@@ -9,7 +9,8 @@ const {
   updateRole,
   registerAD,
   BlockAccount,
-  checkPhone,
+  me,
+  logout,
 } = require("../controllers/Authens.controller");
 const { resetOTP } = require("../../services/OTP.service");
 const {
@@ -35,4 +36,6 @@ router.get(
 router.get("/exportUser", validateApiKey, checkToken, exportUser);
 router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
 
+router.get("/me", me);
+router.get("/logout", logout);
 module.exports = router;
