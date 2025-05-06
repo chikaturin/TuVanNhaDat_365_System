@@ -46,7 +46,6 @@ const postContentImage = async (req, res) => {
       category,
       State,
       Location,
-      Amenities,
       interior_condition,
       deposit_amount,
     ];
@@ -287,13 +286,13 @@ const updatePost = async (req, res) => {
     }
 
     const imageUrls = files.map((file) => file.path);
-    savedProperty.Images = imageUrls;
-
-    await savedProperty.save();
+    property.Images = imageUrls;
 
     const savedProperty = await Property.findByIdAndUpdate(_id, property, {
       new: true,
     });
+    await savedProperty.save();
+
     res.status(201).json({
       message: "Cập nhật bài đăng thành công!",
       property: savedProperty,
@@ -317,7 +316,6 @@ const getPropertyAD = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Lấy danh sách property chưa duyệt + join Account
     const posts = await Property.aggregate([
       { $match: { Approved: { $ne: true } } },
       {
