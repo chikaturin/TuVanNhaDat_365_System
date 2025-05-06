@@ -137,6 +137,12 @@ const propertySchema = new mongoose.Schema({
       type: String,
     },
   ],
+  Images: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
   //new
   maindoor_direction: {
     type: String,
@@ -201,28 +207,6 @@ const amenitiesSchema = new mongoose.Schema({
 });
 
 //------------------------------------------------------------------
-//Schema cho Image
-const propertyImageSchema = new mongoose.Schema({
-  //Lưu ảnh bằng buffer
-  Image: [
-    {
-      type: Buffer,
-      required: true,
-    },
-  ],
-  //Liên kết đến bảng Property
-  Property: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Property",
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-//------------------------------------------------------------------
 //Schema cho Notification
 const notificationSchema = new mongoose.Schema({
   //Title của Notification
@@ -240,10 +224,6 @@ const notificationSchema = new mongoose.Schema({
 //------------------------------------------------------------------
 //Model
 const PropertySchema = mongoose.model("Property", propertySchema);
-const PropertyImageSchema = mongoose.model(
-  "PropertyImage",
-  propertyImageSchema
-);
 
 const LocationSchema = mongoose.model("Location", locationSchema);
 const AmenitiesSchema = mongoose.model("Amenities", amenitiesSchema);
@@ -254,7 +234,6 @@ const AuditLogSchema = mongoose.model("AuditLog", auditLogSchema);
 module.exports = {
   Account: mongoose.model("Account", accountSchema),
   Property: PropertySchema,
-  PropertyImage: PropertyImageSchema,
 
   Location: LocationSchema,
   Amenities: AmenitiesSchema,
