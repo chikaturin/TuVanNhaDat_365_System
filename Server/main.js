@@ -21,6 +21,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://a813-27-2-128-129.ngrok-free.app",
   "https://3e7f-171-252-188-150.ngrok-free.app",
+  "https://6c14-222-253-112-168.ngrok-free.app",
 ];
 
 app.use(

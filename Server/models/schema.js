@@ -33,7 +33,7 @@ const accountSchema = new mongoose.Schema({
     required: true,
     enum: ["Block", "Active"],
   },
-  Password: { type: String, required: false }, // Password cho admin phân role, cập quyền
+  Password: { type: String, required: true }, // Password cho admin phân role, cập quyền
 });
 
 //------------------------------------------------------------------
@@ -86,7 +86,7 @@ const propertySchema = new mongoose.Schema({
   State: {
     type: String,
     required: true,
-    enum: ["Cho thuê", "Đã thuê", "Bán", "Đăng bán"],
+    enum: ["Cho thuê", "Đã thuê", "Đăng bán"],
   },
   // Trạng thái hiển thị phần duyệt bài
   Approved: {
@@ -132,19 +132,33 @@ const propertySchema = new mongoose.Schema({
       required: true,
     },
   },
-  Video: {
-    type: {
-      data: Buffer, // Dữ liệu video
-      contentType: String, // Kiểu MIME của video
-    },
-    required: false,
-  },
-  // Liên kết đến bảng Amenities
   Amenities: [
     {
       type: String,
     },
   ],
+  //new
+  maindoor_direction: {
+    type: String,
+  },
+  Balcony_direction: {
+    type: String,
+  },
+  Type_apartment: {
+    type: String,
+  },
+  interior_condition: {
+    type: String,
+    required: true,
+  },
+  deposit_amount: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  type_documents: {
+    type: String,
+  },
 });
 
 // //------------------------------------------------------------------
