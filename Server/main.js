@@ -19,7 +19,7 @@ app.use(morgan("combined"));
 const allowedOrigins = [
   "http://localhost:8888",
   "http://localhost:3000",
-  "https://6c14-222-253-112-168.ngrok-free.app",
+  "https://homez-fe-oth7.vercel.app",
 ];
 
 app.use(
