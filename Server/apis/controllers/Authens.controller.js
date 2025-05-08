@@ -164,7 +164,7 @@ const login = async (req, res) => {
 
     res.cookie("rl_uns", user, {
       httpOnly: true,
-      secure: false,
+      secure: tr,
       sameSite: "Lax",
       maxAge: expiresIn,
     });

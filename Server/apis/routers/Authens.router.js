@@ -17,10 +17,12 @@ const {
   checkToken,
   checkTokenAPI,
   validateApiKey,
+  checkTokenAPI2,
 } = require("../../middleware/middleware");
 
 router.post("/registerAD", validateApiKey, registerAD);
 router.post("/checktokenAPI", checkTokenAPI);
+router.post("/checktokenAPI2", checkTokenAPI2);
 
 router.post("/register", register);
 router.post("/login", login);
