@@ -164,8 +164,8 @@ const login = async (req, res) => {
 
     res.cookie("rl_uns", user, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
+      secure: tr,
+      sameSite: "Lax",
       maxAge: expiresIn,
     });
 
