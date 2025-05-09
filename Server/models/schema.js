@@ -158,9 +158,7 @@ const propertySchema = new mongoose.Schema({
     required: true,
   },
   deposit_amount: {
-    type: Number,
-    required: true,
-    min: 0,
+    type: String,
   },
   type_documents: {
     type: String,

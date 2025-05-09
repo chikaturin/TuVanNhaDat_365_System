@@ -98,6 +98,7 @@ const postContentImage = async (req, res) => {
       Amenities: parsedAmenities,
       interior_condition,
       deposit_amount,
+      maindoor_direction,
       Type: {
         bedroom,
         bathroom,
@@ -111,7 +112,7 @@ const postContentImage = async (req, res) => {
 
     // Xử lý trường hợp chung cư
     if (category === "Chung cư") {
-      if (!Balcony_direction || !Type_apartment || !maindoor_direction) {
+      if (!Balcony_direction || !Type_apartment) {
         return res.status(401).json({
           message: "Vui lòng điền đầy đủ các trường cho loại hình chung cư",
         });
