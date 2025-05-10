@@ -41,6 +41,7 @@ app.use("/api", require("./apis/routers/Authens.router"));
 app.use("/api", require("./apis/routers/Post.router"));
 app.use("/api", require("./apis/routers/Components.router"));
 app.use("/api", require("./apis/routers/Contact.router"));
+app.use("/api", require("./apis/routers/Email.router"));
 
 // 🔥 Add CORS headers manually in case middleware fails
 app.use((req, res, next) => {

@@ -12,7 +12,7 @@ const {
   me,
   logout,
 } = require("../controllers/Authens.controller");
-const { resetOTP } = require("../../services/OTP.service");
+// const { resetOTP } = require("../../services/OTP.service");
 const {
   checkToken,
   checkTokenAPI,
@@ -36,7 +36,7 @@ router.get(
   BlockAccount
 );
 router.get("/exportUser", validateApiKey, checkToken, exportUser);
-router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
+router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken);
 
 router.get("/me", me);
 router.get("/logout", logout);

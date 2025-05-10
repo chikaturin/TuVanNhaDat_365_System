@@ -277,7 +277,6 @@ const OtpSchema= mongoose.model("Otp", otpSchema);
 module.exports = {
   Account: mongoose.model("Account", accountSchema),
   Property: PropertySchema,
-  PropertyImage: PropertyImageSchema,
   Contact: ContactSchema,
   Otp: OtpSchema,
 

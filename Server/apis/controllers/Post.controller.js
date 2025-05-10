@@ -38,8 +38,6 @@ const postContentImage = async (req, res) => {
       Price,
       Description,
       Address,
-<<<<<<< HEAD
-=======
       bedroom,
       bathroom,
       yearBuilt,
@@ -171,7 +169,6 @@ const updatePost = async (req, res) => {
       Price,
       Description,
       Address,
->>>>>>> 8b839ecb47c41d4832f499c892400fa3483b373c
       bedroom,
       bathroom,
       yearBuilt,
@@ -292,44 +289,8 @@ const updatePost = async (req, res) => {
     const imageUrls = files.map((file) => file.path);
     property.Images = imageUrls;
 
-<<<<<<< HEAD
-      for (const file of files) {
-        const webpBuffer = await sharp(file.buffer)
-          .webp({ quality: 80 })
-          .toBuffer();
-        webpImages.push(webpBuffer);
-      }
-
-      console.log("Tổng số ảnh đã xử lý:", webpImages.length);
-
-      const imageDoc = new PropertyImage({
-        Image: webpImages,
-        Property: savedProperty._id,
-      });
-
-      await imageDoc.save();
-      console.log("Đã lưu PropertyImage thành công");
-    }
-
-    const user = await Account.findOne({
-      PhoneNumber: req.decoded?.PhoneNumber,
-    });
-
-    // Lưu audit log
-    await logAction({
-      action: "create",
-      description: "Tạo bài đăng mới thành công " + savedProperty._id,
-      userId: user._id,
-      userName: user.FirstName+" "+user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: savedProperty,
-      status: "success",
-=======
     const savedProperty = await Property.findByIdAndUpdate(_id, property, {
       new: true,
->>>>>>> 8b839ecb47c41d4832f499c892400fa3483b373c
     });
     await savedProperty.save();
 
@@ -339,25 +300,6 @@ const updatePost = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in postContentImage:", error);
-<<<<<<< HEAD
-    const user = await Account.findOne({
-      PhoneNumber: req.decoded?.PhoneNumber,
-    });
-
-    await logAction({
-      action: "create",
-      description: "Lỗi khi tạo bài đăng mới",
-      userId: user._id,
-      userName: user.FirstName+ " "+ user.LastName,
-      role: user.Role,
-      ipAddress: getClientIp(req),
-      previousData: null,
-      newData: null,
-      status: "fail",
-    });
-
-=======
->>>>>>> 8b839ecb47c41d4832f499c892400fa3483b373c
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -503,70 +445,6 @@ const deletePost = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-// Cập nhật bài đăng
-const updatePost = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateFields = req.body;
-
-    const post = await Property.findByIdAndUpdate(id, updateFields, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!post) {
-      return res.status(404).json({ message: "Không tìm thấy thông tin" });
-    }
-
-    res.status(200).json({ message: "Cập nhật thông tin thành công" });
-  } catch (error) {
-    console.error("Lỗi trong updatePost:", error);
-    res.status(500).json({ message: "error", error });
-  }
-};
-
-const getListPost = async (req, res) => {
-  try {
-    const { page = 1, pageSize = 20 } = req.query;
-    const skip = (page - 1) * pageSize;
-    const limit = parseInt(pageSize);
-
-    const posts = await Property.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    const totalPosts = await Property.countDocuments();
-
-    res.status(200).json({
-      posts,
-      totalPosts,
-      currentPage: parseInt(page),
-      totalPages: Math.ceil(totalPosts / limit),
-    });
-  } catch (error) {
-    console.error("Lỗi trong getListPost:", error);
-    res.status(500).json({ message: "error", error });
-  }
-};
-
-const getListPostWithApprovedTrue = async (req, res) => {
-  try{
-    const posts = await Property.find({ Approved: true })
-    res.status(200).json({
-      message: "Lấy danh sách bài đăng thành công",
-      posts,
-    });
-  }
-  catch (error) {
-    console.error("Lỗi trong getListPostWithApprovedTrue:", error);
-    res.status(500).json({ message: "error", error });
-  }
-}
-
-=======
->>>>>>> 8b839ecb47c41d4832f499c892400fa3483b373c
 module.exports = {
   postContentImage,
   getPropertyAD,
@@ -575,9 +453,4 @@ module.exports = {
   updateStatePost,
   deletePost,
   updatePost,
-<<<<<<< HEAD
-  getListPost,
-  getListPostWithApprovedTrue,
-=======
->>>>>>> 8b839ecb47c41d4832f499c892400fa3483b373c
 };
