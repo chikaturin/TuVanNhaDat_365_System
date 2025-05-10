@@ -1,5 +1,5 @@
 const {Contact} = require ("../../models/schema")
-
+const {sendEmail} =require("../controllers/Email.controller")
 
 //Hàm tạo contact
 const sendContact = async (req, res) => {
@@ -32,6 +32,12 @@ const sendContact = async (req, res) => {
         })
 
         await newRequest.save();
+        sendEmail({
+            to: "DVT41557@gmail.com",
+            subject: "Yêu cầu liên hệ từ người dùng NekoHome",
+            text: `Có yêu cầu liên hệ từ người dùng NekoHome hãy kiểm tra`,
+            html: `<p>Có người dùng từ NekoHome đã gửi liên hệ về bài đăng <strong>${post}</strong></p>`,
+        })
         return res.status(200).json({message: "Yêu cầu đã được gửi thành công"})
     }catch(err){
         console.error(err);
@@ -68,6 +74,25 @@ const getContactByAdmin = async (req, res) => {
     }
 }
 
+const updateStatusContact = async (req, res) => {
+    try{
+        const {id} = req.params;
+        const accept = req.body.accept;
+        if(accept ="accept"){
+            const contact = await Contact.findById(id);
+            if(!contact){
+                return res.status(404).json({message: "Không tìm liên hệ"})
+            }
+            contact.status = "Đã liên hệ";
+            await contact.save();
+            return res.status(200).json({message: "Đã cập nhật trạng thái liên hệ thành công"})
+        }
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({message: "Đã xảy ra lỗi trong quá trình gửi yêu cầu"})
+    }
+}
+
 const getUserContact = async (req, res) => {}
 
 
@@ -75,4 +100,5 @@ const getUserContact = async (req, res) => {}
 module.exports = {
     sendContact,
     getContactByAdmin,
+    updateStatusContact,
 }
