@@ -42,6 +42,39 @@ Status:{
     }
 }
 
+-postContentImage
+{
+    method: POST
+    Router:{
+        "/api/postWithImage"
+        Authorization: Bearer Token
+    }
+    Body:{
+        Title,
+        Price,
+        Description,
+        Address,
+        Length,
+        Width,
+        NumberOfRooms,
+        bedroom,
+        bathroom,
+        yearBuilt,
+        garage,
+        sqft,
+        category,
+        State,
+        Location,
+        Amenities[]: bỏ vào dạng danh sách,
+    }
+    Status:{
+        400: Điền thông tin các trường
+        401: Trường Amenities không hợp lệ.
+        402: Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.
+        201: Tạo property thành công!
+    }
+}
+
 -updateStatePost
 {
    Method: "PUT",

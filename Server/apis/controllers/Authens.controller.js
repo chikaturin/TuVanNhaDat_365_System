@@ -1,11 +1,12 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
-const { Account } = require("../../models/schema");
+const { Account, AuditLog } = require("../../models/schema");
 const ExcelJS = require("exceljs");
 const bcrypt = require("bcrypt");
 dotenv.config();
 const { logAction } = require("../utils/auditlog");
-const getClientIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+const getClientIp = (req) =>
+  req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
 const registerAD = async (req, res) => {
   try {
@@ -47,25 +48,24 @@ const registerAD = async (req, res) => {
     );
 
     await user.save();
-    
+
     // Ghi log hành động
 
     await logAction(
-      action = "Register Admin",
-      description = "Tạo tài khoản admin thành công"+user._id,
-      userId = user._id,
-      userName = user.FirstName + " " + user.LastName,
-      role = user.Role,
-      ipAddress = getClientIp(req),
-      previousData = null,
-      newData = user,
-      status = "success",
-    )
+      (action = "Register Admin"),
+      (description = "Tạo tài khoản admin thành công" + user._id),
+      (userId = user._id),
+      (userName = user.FirstName + " " + user.LastName),
+      (role = user.Role),
+      (ipAddress = getClientIp(req)),
+      (previousData = null),
+      (newData = user),
+      (status = "success")
+    );
     return res
       .status(201)
       .json({ message: "Account created successfully", token });
   } catch (error) {
-  
     console.error("Register error:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
@@ -73,8 +73,8 @@ const registerAD = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    const { PhoneNumber, Email, FirstName, LastName } = req.body;
-    if (!PhoneNumber || !Email || !FirstName || !LastName) {
+    const { PhoneNumber, Email, FirstName, LastName, Password } = req.body;
+    if (!PhoneNumber || !Email || !FirstName || !LastName || !Password) {
       return res
         .status(400)
         .json({ message: "Vui lòng nhập đầy đủ thông tin" });
@@ -92,32 +92,30 @@ const register = async (req, res) => {
     const user = new Account({
       PhoneNumber,
       Email,
+      Password: await bcrypt.hash(Password, 10),
       FirstName,
       LastName,
       Status: "Active",
       Role: "User",
     });
 
+    await user.save();
+
     // Tạo token JWT
     const token = jwt.sign(
       { PhoneNumber, Email, FirstName, LastName },
-      process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      process.env.SECRET_KEY
     );
 
-    await user.save();
-    await logAction(
-      action = "Register",
-      description = "Tạo tài khoản  thành công"+user._id,
-      userId = user._id,
-      userName = user.FirstName + " " + user.LastName,
-      role = user.Role,
-      ipAddress = getClientIp(req),
-      previousData = null,
-      newData = user,
-      status = "success",
-    )
+    const auditlog = new AuditLog({
+      action: "Đăng ký tài khoản",
+      userId: PhoneNumber,
+      userName: FirstName,
+      ipAddress: getClientIp(req),
+      status: "success",
+    });
 
+    await auditlog.save();
     return res
       .status(201)
       .json({ message: "Account created successfully", token });
@@ -131,40 +129,87 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { PhoneNumber } = req.body;
+    const { PhoneNumber, Password } = req.body;
     const user = await Account.findOne({ PhoneNumber });
-    if (!user) return res.status(400).json({ message: "User not found" });
-    if (user.Status === "Block") {
-      return res.status(400).json({ message: "Tài khoản của bạn đã bị khoá" });
+
+    if (!PhoneNumber || !Password) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng nhập đầy đủ thông tin" });
     }
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.Status === "Block") {
+      return res.status(401).json({ message: "Tài khoản của bạn đã bị khoá" });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(Password, user.Password);
+    if (!isPasswordCorrect) {
+      return res.status(402).json({ message: "Sai mật khẩu" });
+    }
+
+    const expiresIn = 24 * 60 * 60 * 1000; // 24h
+
     const token = jwt.sign(
       {
+        Email: user.Email,
         FirstName: user.FirstName,
         LastName: user.LastName,
-        Role: user.Role,
         PhoneNumber: user.PhoneNumber,
       },
       process.env.SECRET_KEY,
-      {
-        expiresIn: "24h",
-      }
+      { expiresIn: "24h" }
     );
-    // Ghi log hành động
-    await logAction(
-      action = "Login",
-      description = "Đăng nhập thành công"+user._id,
-      userId = user._id,
-      userName = user.FirstName + " " + user.LastName,
-      role = user.Role,
-      ipAddress = getClientIp(req),
-      previousData = null,
-      newData = null,
-      status = "success",
-    );
-    res.status(201).json({ message: "User logged in successfully", token });
+
+    res.cookie("rl_uns", user, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      maxAge: expiresIn,
+    });
+
+    if (user.Role !== "Admin" && user.Role !== "Staff") {
+      const auditlog = new AuditLog({
+        action: "Đăng nhập tài khoản",
+        userId: PhoneNumber,
+        userName: user.FirstName,
+        ipAddress: getClientIp(req),
+        status: "success",
+      });
+      await auditlog.save();
+    }
+
+    return res.status(201).json({
+      message: "Login successfully",
+      token,
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error by login", error });
+  }
+};
+
+const me = async (req, res) => {
+  const User = req.cookies.rl_uns;
+  if (!User) return res.status(202).json({ message: "Chưa đăng nhập" });
+
+  try {
+    res.status(201).json({
+      Role: User.Role,
+    });
+  } catch (err) {
+    return res.status(401).json({ message: "User không hợp lệ" });
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    res.clearCookie("rl_uns");
+    res.status(201).json({ message: "Logout successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Internal server error by logout" });
   }
 };
 
@@ -177,7 +222,7 @@ const listUser = async (req, res) => {
     if (!checkToken.Role === "Admin" || !checkToken.Role === "Staff") {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const user = await Account.find({ Role: { $ne: "Admin" } });
+    const user = await Account.find({ Role: "User" });
 
     if (!user) {
       res.status(400).json({ message: "Lỗi không tìm thấy dữ liệu" });
@@ -375,4 +420,6 @@ module.exports = {
   updateRole,
   registerAD,
   BlockAccount,
+  me,
+  logout,
 };

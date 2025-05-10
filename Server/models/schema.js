@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const auditLogSchema = new mongoose.Schema({
   action: { type: String, required: true },
   description: { type: String },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+  userId: { type: String },
   userName: { type: String },
   role: { type: String },
   resource: { type: String },
@@ -33,7 +33,7 @@ const accountSchema = new mongoose.Schema({
     required: true,
     enum: ["Block", "Active"],
   },
-  Password: { type: String, required: false }, // Password cho admin phân role, cập quyền
+  Password: { type: String, required: true }, // Password cho admin phân role, cập quyền
 });
 
 //------------------------------------------------------------------
@@ -86,7 +86,7 @@ const propertySchema = new mongoose.Schema({
   State: {
     type: String,
     required: true,
-    enum: ["Cho thuê", "Đã thuê", "Bán", "Đã bán"],
+    enum: ["Cho thuê", "Đã thuê", "Đăng bán"],
   },
   // Trạng thái hiển thị phần duyệt bài
   Approved: {
@@ -132,20 +132,37 @@ const propertySchema = new mongoose.Schema({
       required: true,
     },
   },
-  Video: {
-    type: {
-      data: Buffer,         // Dữ liệu video
-      contentType: String,  // Kiểu MIME của video
-    },
-    required: false,
-  },
-  // Liên kết đến bảng Amenities
   Amenities: [
+    {
+      type: String,
+    },
+  ],
+  Images: [
     {
       type: String,
       required: true,
     },
   ],
+  //new
+  maindoor_direction: {
+    type: String,
+  },
+  Balcony_direction: {
+    type: String,
+  },
+  Type_apartment: {
+    type: String,
+  },
+  interior_condition: {
+    type: String,
+    required: true,
+  },
+  deposit_amount: {
+    type: String,
+  },
+  type_documents: {
+    type: String,
+  },
   highlight: {
     type: Boolean,
     default: false,
@@ -225,28 +242,6 @@ const amenitiesSchema = new mongoose.Schema({
 });
 
 //------------------------------------------------------------------
-//Schema cho Image
-const propertyImageSchema = new mongoose.Schema({
-  //Lưu ảnh bằng buffer
-  Image: [
-    {
-      type: Buffer,
-      required: true,
-    },
-  ],
-  //Liên kết đến bảng Property
-  Property: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Property",
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-//------------------------------------------------------------------
 //Schema cho Notification
 const notificationSchema = new mongoose.Schema({
   //Title của Notification
@@ -270,10 +265,6 @@ const otpSchema = new mongoose.Schema({
 //------------------------------------------------------------------
 //Model
 const PropertySchema = mongoose.model("Property", propertySchema);
-const PropertyImageSchema = mongoose.model(
-  "PropertyImage",
-  propertyImageSchema
-);
 
 const LocationSchema = mongoose.model("Location", locationSchema);
 const AmenitiesSchema = mongoose.model("Amenities", amenitiesSchema);

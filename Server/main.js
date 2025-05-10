@@ -9,13 +9,19 @@ const db = require("./models/db");
 
 const app = express();
 
-// middleware always put first
 app.use(json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("combined"));
 
-const allowedOrigins = ["http://localhost:8888", "http://localhost:3000"];
+const allowedOrigins = [
+  "http://localhost:8888",
+  "http://localhost:3000",
+  "https://homez-fe-oth7.vercel.app",
+  "https://65ea-171-252-188-150.ngrok-free.app",
+];
 
 app.use(
   cors({
@@ -60,3 +66,4 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Now streaming on http://localhost:${PORT}`);
 });
+module.exports = app;
