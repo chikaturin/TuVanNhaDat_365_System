@@ -146,6 +146,10 @@ const propertySchema = new mongoose.Schema({
       required: true,
     },
   ],
+  highlight: {
+    type: Boolean,
+    default: false,
+  },
 });
 //Schema cho người dùng liên hệ 
 const contactSchema = new mongoose.Schema({
@@ -256,6 +260,12 @@ const notificationSchema = new mongoose.Schema({
     required: true,
   },
 });
+//OTP Schema
+const otpSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  otp: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now, expires: 300 }, // TTL 5 phút
+})
 
 //------------------------------------------------------------------
 //Model
@@ -271,12 +281,14 @@ const CategorySchema = mongoose.model("Category", categorySchema);
 const NotificationSchema = mongoose.model("Notification", notificationSchema);
 const AuditLogSchema = mongoose.model("AuditLog", auditLogSchema);
 const ContactSchema= mongoose.model("Contact", contactSchema);
+const OtpSchema= mongoose.model("Otp", otpSchema);
 
 module.exports = {
   Account: mongoose.model("Account", accountSchema),
   Property: PropertySchema,
   PropertyImage: PropertyImageSchema,
   Contact: ContactSchema,
+  Otp: OtpSchema,
 
   Location: LocationSchema,
   Amenities: AmenitiesSchema,

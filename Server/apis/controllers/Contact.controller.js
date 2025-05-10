@@ -93,7 +93,24 @@ const updateStatusContact = async (req, res) => {
     }
 }
 
-const getUserContact = async (req, res) => {}
+
+const deleteContact = async (req, res) => {
+    try{
+        const {id} = req.params;
+        const contact = await Contact.findById(id);
+        if(!contact){
+            return res.status(404).json({message: "Không tìm thấy liên hệ"})
+        }
+        if(contact.status === "Chưa liên hệ"){
+            return res.status(400).json({message: "Không thể xóa liên hệ chưa được xử lý"})
+        }
+        await contact.remove();
+        return res.status(200).json({message: "Đã xóa liên hệ thành công"})
+        }catch(err){
+        console.error(err);
+        return res.status(500).json({message: "Đã xảy ra lỗi trong quá trình gửi yêu cầu"})
+        }
+}
 
 
 
@@ -101,4 +118,5 @@ module.exports = {
     sendContact,
     getContactByAdmin,
     updateStatusContact,
+    deleteContact,
 }
