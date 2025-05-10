@@ -61,7 +61,28 @@ const getContactByAdmin = async (req, res) => {
         const skip = (pageNumber - 1) * limitNumber;
         const totalContacts = await Contact.countDocuments();
         const totalPages = Math.ceil(totalContacts / limitNumber);
-        const contacts = await Contact.find().sort({email:1,createAt:1}).select('name phone post typeofPost email status -_id').skip(skip).limit(limitNumber);
+        const contacts = await Contact.find({status:"Chưa liên hệ"}).sort({email:1,createAt:1}).select('name phone post typeofPost email status -_id').skip(skip).limit(limitNumber);
+        return res.status(200).json({
+            contacts,
+            totalPages,
+            currentPage: pageNumber,
+            totalContacts
+        })
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({message: "Đã xảy ra lỗi trong quá trình gửi yêu cầu"})
+    }
+}
+
+const getContactedByAdmin = async (req, res) => {
+    try{
+        const {page, limit} = req.query;
+        const pageNumber = parseInt(page) || 1;
+        const limitNumber = parseInt(limit) || 10;
+        const skip = (pageNumber - 1) * limitNumber;
+        const totalContacts = await Contact.countDocuments();
+        const totalPages = Math.ceil(totalContacts / limitNumber);
+        const contacts = await Contact.find({status:"Đã liên hệ"}).sort({email:1,createAt:-1}).select('name phone post typeofPost email status -_id').skip(skip).limit(limitNumber);
         return res.status(200).json({
             contacts,
             totalPages,
@@ -117,6 +138,7 @@ const deleteContact = async (req, res) => {
 module.exports = {
     sendContact,
     getContactByAdmin,
+    getContactedByAdmin,
     updateStatusContact,
     deleteContact,
 }
