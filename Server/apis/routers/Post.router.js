@@ -11,6 +11,7 @@ const {
   updatePost,
   postContentImage,
   getListPost,
+  getListPostWithApprovedTrue
 } = require("../controllers/Post.controller");
 
 // router.post("/listings", checkToken, postContent);
@@ -21,5 +22,6 @@ router.put("/listings/state/:_id", updateStatePost);
 router.delete("/listings/delete/:_id", deletePost);
 router.put("/listings/update/:_id", updatePost);
 router.get("/listings", getListPost);
+router.get("/listingsApproved", getListPostWithApprovedTrue);
 
 module.exports = router;

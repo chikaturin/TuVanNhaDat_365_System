@@ -404,6 +404,20 @@ const getListPost = async (req, res) => {
   }
 };
 
+const getListPostWithApprovedTrue = async (req, res) => {
+  try{
+    const posts = await Property.find({ Approved: true })
+    res.status(200).json({
+      message: "Lấy danh sách bài đăng thành công",
+      posts,
+    });
+  }
+  catch (error) {
+    console.error("Lỗi trong getListPostWithApprovedTrue:", error);
+    res.status(500).json({ message: "error", error });
+  }
+}
+
 module.exports = {
   // postContent,
   postContentImage,
@@ -413,4 +427,5 @@ module.exports = {
   deletePost,
   updatePost,
   getListPost,
+  getListPostWithApprovedTrue,
 };

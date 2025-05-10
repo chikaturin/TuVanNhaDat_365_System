@@ -147,6 +147,39 @@ const propertySchema = new mongoose.Schema({
     },
   ],
 });
+//Schema cho người dùng liên hệ 
+const contactSchema = new mongoose.Schema({
+  name:{
+    type: String,
+    required: true,
+  },
+  phone:{
+    type: String,
+    required: true,
+  },
+  post:{
+    type: String,
+    required: true,
+  },
+  typeofPost:{
+    type: String,
+    required: true,
+  },
+  createAt:{
+    type: Date,
+    default: Date.now,
+  },
+  email:{
+    type: String,
+    required: true,
+  },
+  status:{
+    type: String,
+    enum:["Chưa liên hệ", "Đã liên hệ"],
+    default: "Chưa liên hệ",
+  },
+ 
+})
 
 // //------------------------------------------------------------------
 // //Schema cho Type
@@ -237,11 +270,13 @@ const AmenitiesSchema = mongoose.model("Amenities", amenitiesSchema);
 const CategorySchema = mongoose.model("Category", categorySchema);
 const NotificationSchema = mongoose.model("Notification", notificationSchema);
 const AuditLogSchema = mongoose.model("AuditLog", auditLogSchema);
+const ContactSchema= mongoose.model("Contact", contactSchema);
 
 module.exports = {
   Account: mongoose.model("Account", accountSchema),
   Property: PropertySchema,
   PropertyImage: PropertyImageSchema,
+  Contact: ContactSchema,
 
   Location: LocationSchema,
   Amenities: AmenitiesSchema,
