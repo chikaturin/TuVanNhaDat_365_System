@@ -10,21 +10,6 @@ const {
   deletePost,
   updatePost,
   postContentImage,
-<<<<<<< HEAD
-  getListPost,
-  getListPostWithApprovedTrue
-} = require("../controllers/Post.controller");
-
-// router.post("/listings", checkToken, postContent);
-router.post("/postWithImage", upload, checkToken, postContentImage);
-router.get("/listings", checkToken, getPropertyAD);
-router.get("/listings/:_id", checkToken, getContentDetail);
-router.put("/listings/state/:_id", updateStatePost);
-router.delete("/listings/delete/:_id", deletePost);
-router.put("/listings/update/:_id", updatePost);
-router.get("/listings", getListPost);
-router.get("/listingsApproved", getListPostWithApprovedTrue);
-=======
   getProperty,
 } = require("../controllers/Post.controller");
 
@@ -46,6 +31,5 @@ router.put(
   checkToken,
   updatePost
 );
->>>>>>> 8b839ecb47c41d4832f499c892400fa3483b373c
 
 module.exports = router;
