@@ -227,6 +227,9 @@ const contactSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  message: {
+    type: String,
+  },
   status: {
     type: String,
     enum: ["Chưa liên hệ", "Đã liên hệ"],
