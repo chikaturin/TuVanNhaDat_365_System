@@ -217,6 +217,14 @@ const updatePost = async (req, res) => {
         .json({ message: "Vui lòng điền đầy đủ các trường." });
     }
 
+    const checkRole = await Account.findOne({
+      PhoneNumber: req.decoded?.PhoneNumber,
+    });
+
+    if (checkRole.Role !== "Admin" && checkRole.Role !== "Staff") {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     let parsedAmenities;
     try {
       parsedAmenities = Array.isArray(Amenities)
@@ -238,6 +246,149 @@ const updatePost = async (req, res) => {
       Account: req.decoded?.PhoneNumber,
       State,
       Location,
+      Amenities: parsedAmenities,
+      interior_condition,
+      deposit_amount,
+      maindoor_direction,
+      Type: {
+        bedroom,
+        bathroom,
+        yearBuilt,
+        garage,
+        sqft,
+        category,
+      },
+    };
+    if (category === "Chung cư") {
+      if (!Balcony_direction || !Type_apartment || !maindoor_direction) {
+        return res.status(401).json({
+          message: "Vui lòng điền đầy đủ các trường cho loại hình chung cư",
+        });
+      }
+      property.maindoor_direction = maindoor_direction;
+      property.Balcony_direction = Balcony_direction;
+      property.Type_apartment = Type_apartment;
+    }
+
+    // Xử lý trường hợp đăng bán
+    if (State === "Đăng bán") {
+      if (!type_documents) {
+        return res.status(401).json({
+          message: "Vui lòng điền đầy đủ các trường cho loại hình bán",
+        });
+      }
+      property.type_documents = type_documents;
+    }
+
+    const files = req.files;
+
+    for (const oldUrl of oldProperty.Images) {
+      const segments = oldUrl.split("/");
+      const fileName = segments[segments.length - 1].split(".")[0];
+      const publicId = `Homez/${fileName}`;
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    if (!files || files.length < 4 || files.length > 9) {
+      return res.status(401).json({
+        error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
+      });
+    }
+
+    const imageUrls = files.map((file) => file.path);
+    property.Images = imageUrls;
+
+    const savedProperty = await Property.findByIdAndUpdate(_id, property, {
+      new: true,
+    });
+    await savedProperty.save();
+
+    res.status(201).json({
+      message: "Cập nhật bài đăng thành công!",
+      property: savedProperty,
+    });
+  } catch (error) {
+    console.error("Error in postContentImage:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+const updatePostUser = async (req, res) => {
+  try {
+    const {
+      Title,
+      Price,
+      Description,
+      Address,
+      bedroom,
+      bathroom,
+      yearBuilt,
+      garage,
+      sqft,
+      category,
+      State,
+      Location,
+      Amenities,
+      interior_condition,
+      deposit_amount,
+      type_documents,
+      Balcony_direction,
+      Type_apartment,
+      maindoor_direction,
+    } = req.body;
+
+    const requiredFields = [
+      Title,
+      Price,
+      Description,
+      Address,
+      bedroom,
+      bathroom,
+      yearBuilt,
+      garage,
+      sqft,
+      category,
+      State,
+      Location,
+      Amenities,
+      interior_condition,
+      deposit_amount,
+    ];
+
+    if (
+      requiredFields.some(
+        (field) =>
+          field === undefined ||
+          field === null ||
+          (Array.isArray(field) && field.length === 0)
+      )
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng điền đầy đủ các trường." });
+    }
+
+    let parsedAmenities;
+    try {
+      parsedAmenities = Array.isArray(Amenities)
+        ? Amenities
+        : JSON.parse(Amenities || "[]");
+    } catch (err) {
+      return res.status(401).json({ error: "Trường Amenities không hợp lệ." });
+    }
+    const { _id } = req.params;
+    const oldProperty = await Property.findById(_id);
+    if (!oldProperty) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng." });
+    }
+    const property = {
+      Title,
+      Price,
+      Description,
+      Address,
+      Account: req.decoded?.PhoneNumber,
+      State,
+      Location,
+      Approved: false,
       Amenities: parsedAmenities,
       interior_condition,
       deposit_amount,
@@ -476,4 +627,5 @@ module.exports = {
   deletePost,
   updatePost,
   addHighlightTag,
+  updatePostUser,
 };

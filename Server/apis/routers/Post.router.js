@@ -12,6 +12,7 @@ const {
   postContentImage,
   getProperty,
   addHighlightTag,
+  updatePostUser,
 } = require("../controllers/Post.controller");
 
 // router.post("/listings", checkToken, postContent);
@@ -28,6 +29,11 @@ router.get("/listings-state/:id", checkToken, updateStatePost);
 router.delete("/listings-delete/:id", deletePost);
 router.put(
   "/listings-update/:_id",
+  uploadCloud.array("images", 9),
+  updatePostUser
+);
+router.put(
+  "/listings-updateAD/:_id",
   uploadCloud.array("images", 9),
   checkToken,
   updatePost
