@@ -452,6 +452,18 @@ const addHighlightTag = async (req, res) => {
     if (!property) {
       return res.status(404).json({ message: "Không tìm thấy bài đăng" });
     }
+    // Kiểm tra xem có dưới 5 bài đăng đã có tag higlight bằng true hay chưa
+    const highlightCount = await Property.countDocuments({
+      highlight: true
+    });
+
+    console.log(highlightCount);
+
+    if (highlightCount >= 5 && property.highlight == false) {
+      return res.status(400).json({
+        message: "Đã có 5 bài đăng được đánh dấu nổi bật. Không thể thêm nữa.",
+      });
+    }
    if (property.highlight == true){
       property.highlight = false;
       await property.save();
