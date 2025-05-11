@@ -481,6 +481,22 @@ const addHighlightTag = async (req, res) => {
   }
 }
 
+const getListHighlight = async (req, res) => {
+  try {
+    const posts = await Property.find({ highlight: true })
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Lấy bài đăng thành công", data: posts });
+  }
+  catch (error) {
+    console.error("Lỗi trong getListHighlight:", error);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+}
+
 module.exports = {
   postContentImage,
   getPropertyAD,
@@ -490,4 +506,5 @@ module.exports = {
   deletePost,
   updatePost,
   addHighlightTag,
+  getListHighlight
 };
