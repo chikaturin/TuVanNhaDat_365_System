@@ -11,6 +11,7 @@ const {
   updatePost,
   postContentImage,
   getProperty,
+  addHighlightTag,
 } = require("../controllers/Post.controller");
 
 // router.post("/listings", checkToken, postContent);
@@ -31,5 +32,7 @@ router.put(
   checkToken,
   updatePost
 );
+
+router.put("/addHighlightTag/:_id", checkToken, addHighlightTag);
 
 module.exports = router;
