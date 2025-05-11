@@ -445,6 +445,30 @@ const deletePost = async (req, res) => {
   }
 };
 
+const addHighlightTag = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const property = await Property.findById(id);
+    if (!property) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng" });
+    }
+   if (property.highlight == true){
+      property.highlight = false;
+      await property.save();
+      return res.status(200).json({ message: "Bỏ đánh dấu thành công" });
+    }
+    else {
+      property.highlight = true;
+      await property.save();
+      return res.status(200).json({ message: "Đánh dấu thành công" });
+   }  
+  }
+  catch (error) {
+    console.error("Lỗi trong addHighlightTag:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+}
+
 module.exports = {
   postContentImage,
   getPropertyAD,
@@ -453,4 +477,5 @@ module.exports = {
   updateStatePost,
   deletePost,
   updatePost,
+  addHighlightTag,
 };
