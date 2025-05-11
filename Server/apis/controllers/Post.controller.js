@@ -98,6 +98,7 @@ const postContentImage = async (req, res) => {
       Amenities: parsedAmenities,
       interior_condition,
       deposit_amount,
+      maindoor_direction,
       Type: {
         bedroom,
         bathroom,
@@ -111,7 +112,7 @@ const postContentImage = async (req, res) => {
 
     // Xử lý trường hợp chung cư
     if (category === "Chung cư") {
-      if (!Balcony_direction || !Type_apartment || !maindoor_direction) {
+      if (!Balcony_direction || !Type_apartment) {
         return res.status(401).json({
           message: "Vui lòng điền đầy đủ các trường cho loại hình chung cư",
         });
@@ -240,6 +241,7 @@ const updatePost = async (req, res) => {
       Amenities: parsedAmenities,
       interior_condition,
       deposit_amount,
+      maindoor_direction,
       Type: {
         bedroom,
         bathroom,
@@ -444,6 +446,27 @@ const deletePost = async (req, res) => {
   }
 };
 
+const addHighlightTag = async (req, res) => {
+  try {
+    const { _id } = req.params;
+    const property = await Property.findById(_id);
+    if (!property) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng" });
+    }
+    property.highlight === true
+      ? (property.highlight = false)
+      : (property.highlight = true);
+    await property.save();
+    res.status(200).json({
+      message: "Thay đổi trạng thái highlight thành công",
+      highlight: property.highlight,
+    });
+  } catch (error) {
+    console.error("Lỗi trong addHighlightTag:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 module.exports = {
   postContentImage,
   getPropertyAD,
@@ -452,4 +475,5 @@ module.exports = {
   updateStatePost,
   deletePost,
   updatePost,
+  addHighlightTag,
 };
