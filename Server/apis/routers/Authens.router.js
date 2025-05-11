@@ -11,6 +11,7 @@ const {
   BlockAccount,
   me,
   logout,
+  updateUser,
 } = require("../controllers/Authens.controller");
 const { resetOTP } = require("../../services/OTP.service");
 const {
@@ -40,4 +41,6 @@ router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
 
 router.get("/me", me);
 router.get("/logout", logout);
+
+router.put("/updateUser", checkToken, updateUser);
 module.exports = router;
