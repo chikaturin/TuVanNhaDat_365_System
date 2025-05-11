@@ -2,7 +2,7 @@ const { Contact, Account } = require("../../models/schema");
 
 const sendContact = async (req, res) => {
   try {
-    const { name, phone, post, typeofPost, email } = req.body;
+    const { name, phone, post, typeofPost, email, message } = req.body;
 
     const existingRequest = await Contact.find({
       post: post,
@@ -31,6 +31,7 @@ const sendContact = async (req, res) => {
       post,
       typeofPost,
       email,
+      message,
     });
 
     await newRequest.save();
