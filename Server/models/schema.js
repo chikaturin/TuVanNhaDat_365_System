@@ -215,6 +215,7 @@ const contactSchema = new mongoose.Schema({
   post: {
     type: String,
   },
+
   typeofPost: {
     type: String,
   },
