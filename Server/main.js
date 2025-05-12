@@ -19,9 +19,8 @@ app.use(morgan("combined"));
 const allowedOrigins = [
   "http://localhost:8888",
   "http://localhost:3000",
-  "https://a813-27-2-128-129.ngrok-free.app",
-  "https://3e7f-171-252-188-150.ngrok-free.app",
-  "https://6c14-222-253-112-168.ngrok-free.app",
+  "http://localhost:3001",
+  "https://homez-fe-oth7.vercel.app",
 ];
 
 app.use(
@@ -41,6 +40,7 @@ app.use(
 app.use("/api", require("./apis/routers/Authens.router"));
 app.use("/api", require("./apis/routers/Post.router"));
 app.use("/api", require("./apis/routers/Components.router"));
+app.use("/api", require("./apis/routers/Contact.router"));
 
 // 🔥 Add CORS headers manually in case middleware fails
 app.use((req, res, next) => {

@@ -157,35 +157,16 @@ const propertySchema = new mongoose.Schema({
     required: true,
   },
   deposit_amount: {
-    type: Number,
-    required: true,
-    min: 0,
+    type: String,
   },
   type_documents: {
     type: String,
   },
+  highlight: {
+    type: Boolean,
+    default: false,
+  },
 });
-
-// //------------------------------------------------------------------
-// //Schema cho Type
-// const typeSchema = new mongoose.Schema({
-//   // Tên của Type
-//   Name: {
-//     type: String,
-//     required: true,
-//   },
-//   // Mô tả của Type
-//   Description: {
-//     type: String,
-//     required: true,
-//   },
-//   //Approved hay chưa
-//   Approved: {
-//     type: Boolean,
-//     default: false,
-//   },
-// });
-
 //Schema cho Location
 const locationSchema = new mongoose.Schema({
   // Tên của Location vd: Q7 RiverSide
@@ -219,20 +200,56 @@ const notificationSchema = new mongoose.Schema({
     required: true,
   },
 });
+//------------------------------------------------------------------
+//Schema cho contact
+const contactSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  phone: {
+    type: String,
+    required: true,
+  },
+  post: {
+    type: String,
+  },
+
+  typeofPost: {
+    type: String,
+  },
+  createAt: {
+    type: Date,
+    default: Date.now,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  message: {
+    type: String,
+  },
+  status: {
+    type: String,
+    enum: ["Chưa liên hệ", "Đã liên hệ"],
+    default: "Chưa liên hệ",
+  },
+});
 
 //------------------------------------------------------------------
 //Model
 const PropertySchema = mongoose.model("Property", propertySchema);
-
 const LocationSchema = mongoose.model("Location", locationSchema);
 const AmenitiesSchema = mongoose.model("Amenities", amenitiesSchema);
 const CategorySchema = mongoose.model("Category", categorySchema);
 const NotificationSchema = mongoose.model("Notification", notificationSchema);
 const AuditLogSchema = mongoose.model("AuditLog", auditLogSchema);
+const ContactSchema = mongoose.model("Contact", contactSchema);
 
 module.exports = {
   Account: mongoose.model("Account", accountSchema),
   Property: PropertySchema,
+  Contact: ContactSchema,
 
   Location: LocationSchema,
   Amenities: AmenitiesSchema,

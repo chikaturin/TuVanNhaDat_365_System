@@ -164,7 +164,7 @@ const login = async (req, res) => {
 
     res.cookie("rl_uns", user, {
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: "Lax",
       maxAge: expiresIn,
     });
@@ -411,6 +411,31 @@ const BlockAccount = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  try {
+    const { PhoneNumber } = req.decoded.PhoneNumber;
+    const { FirstName, LastName, Email, Password } = req.body;
+
+    const user = await Account.findOne({ PhoneNumber });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const hashedPassword = await bcrypt.hash(Password, 10);
+
+    user.FirstName = FirstName || user.FirstName;
+    user.LastName = LastName || user.LastName;
+    user.Email = Email || user.Email;
+    user.Password = hashedPassword || user.Password;
+
+    await user.save();
+
+    return res.status(200).json({ message: "User updated successfully", user });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -422,4 +447,5 @@ module.exports = {
   BlockAccount,
   me,
   logout,
+  updateUser,
 };

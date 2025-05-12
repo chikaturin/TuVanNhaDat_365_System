@@ -11,16 +11,19 @@ const {
   BlockAccount,
   me,
   logout,
+  updateUser,
 } = require("../controllers/Authens.controller");
 const { resetOTP } = require("../../services/OTP.service");
 const {
   checkToken,
   checkTokenAPI,
   validateApiKey,
+  checkTokenAPI2,
 } = require("../../middleware/middleware");
 
 router.post("/registerAD", validateApiKey, registerAD);
-router.post("/checktokenAPI", checkTokenAPI);
+router.post("/checktokenAPI", validateApiKey, checkTokenAPI);
+router.post("/checktokenAPI2", validateApiKey, checkTokenAPI2);
 
 router.post("/register", register);
 router.post("/login", login);
@@ -38,4 +41,6 @@ router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
 
 router.get("/me", me);
 router.get("/logout", logout);
+
+router.put("/updateUser", checkToken, updateUser);
 module.exports = router;
