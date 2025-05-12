@@ -28,7 +28,7 @@ router.post("/checktokenAPI2", validateApiKey, checkTokenAPI2);
 router.post("/register", register);
 router.post("/login", login);
 router.get("/listingUser", validateApiKey, checkToken, listUser);
-router.get("/searchUser/:PhoneNumber", validateApiKey, checkToken, search_User);
+router.get("/searchUser/:PhoneNumber", search_User);
 router.put("/updateRole", validateApiKey, checkToken, updateRole);
 router.get(
   "/blockAccount/:PhoneNumber",
@@ -42,5 +42,5 @@ router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
 router.get("/me", me);
 router.get("/logout", logout);
 
-router.put("/updateUser", checkToken, updateUser);
+router.put("/updateUser/:PhoneNumber", updateUser);
 module.exports = router;
