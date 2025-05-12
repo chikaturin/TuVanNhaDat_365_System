@@ -13,6 +13,7 @@ const {
   getProperty,
   addHighlightTag,
   updatePostUser,
+  listingPortUser,
 } = require("../controllers/Post.controller");
 
 // router.post("/listings", checkToken, postContent);
@@ -31,5 +32,6 @@ router.put("/listings-updateAD/:_id", checkToken, updatePost);
 router.put("/listings-update/:_id", checkToken, updatePostUser);
 
 router.put("/addHighlightTag/:_id", checkToken, addHighlightTag);
+router.get("/listingPortUser", checkToken, listingPortUser);
 
 module.exports = router;
