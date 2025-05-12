@@ -78,7 +78,7 @@ const postContentImage = async (req, res) => {
     }
 
     const imageUrls = files.map((file) => {
-      return `http://localhost:8888/uploads/${file.filename}`;
+      return `${process.env.URL_IMAGES}/${file.filename}`;
     });
 
     let parsedAmenities;
@@ -292,7 +292,7 @@ const updatePost = async (req, res) => {
       });
     }
     const imageUrls = files.map((file) => {
-      return `http://localhost:8888/uploads/${file.filename}`;
+      return `${process.env.URL_IMAGES}/${file.filename}`;
     });
 
     property.Images = imageUrls;
@@ -432,7 +432,7 @@ const updatePostUser = async (req, res) => {
       });
     }
     const imageUrls = files.map((file) => {
-      return `http://localhost:8888/uploads/${file.filename}`;
+      return `${process.env.URL_IMAGES}/${file.filename}`;
     });
 
     property.Images = imageUrls;
