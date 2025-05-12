@@ -99,7 +99,6 @@ const propertySchema = new mongoose.Schema({
   // Liên kết đến bảng Location
   Location: {
     type: String,
-    required: true,
   },
   Type: {
     bedroom: {

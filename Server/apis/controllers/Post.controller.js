@@ -45,7 +45,6 @@ const postContentImage = async (req, res) => {
       sqft,
       category,
       State,
-      Location,
       interior_condition,
       deposit_amount,
     ];
