@@ -1,0 +1,12 @@
+Khi run server trên node bạn chỉ việc npm run dev
+Và bỏ lỗi chặn cors thì vào main.js
+Thay tất cả dòng này thành link mà bạn deploy fe tránh lỗi cors 
+const allowedOrigins = [
+  "http://localhost:8888",
+  "http://localhost:3000",
+  "https://homez-fe-oth7.vercel.app",
+  "https://0c87-171-252-188-150.ngrok-free.app",
+];
+
+Lưu ý: http://localhost:8888/ thường hay có dấu ‘/ ’ sau hãy xoá nó đi 
+Và thêm vào file .env
