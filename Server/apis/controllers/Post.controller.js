@@ -7,7 +7,8 @@ const sharp = require("sharp");
 const { logAction } = require("../utils/auditlog");
 const getClientIp = (req) =>
   req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
-const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+const path = require("path");
 
 const postContentImage = async (req, res) => {
   try {
@@ -69,12 +70,30 @@ const postContentImage = async (req, res) => {
     const files = req.files;
 
     if (!files || files.length < 4 || files.length > 9) {
+      files.forEach((file) => fs.unlinkSync(file.path));
       return res.status(401).json({
         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
       });
     }
 
-    const imageUrls = files.map((file) => file.path);
+    const imageUrls = [];
+
+    for (const file of files) {
+      const inputPath = file.path;
+      const webpFilename = file.filename.split(".")[0] + ".webp";
+      const outputPath = path.join(path.dirname(inputPath), webpFilename);
+
+      try {
+        await sharp(inputPath).webp({ quality: 80 }).toFile(outputPath);
+
+        fs.unlinkSync(inputPath);
+
+        imageUrls.push(`${process.env.URL_IMAGES}/${webpFilename}`);
+      } catch (err) {
+        console.error("Error converting image to webp:", err);
+        return res.status(500).json({ message: "Lỗi chuyển ảnh sang webp" });
+      }
+    }
 
     let parsedAmenities;
     try {
@@ -162,6 +181,7 @@ const postContentImage = async (req, res) => {
 };
 
 const updatePost = async (req, res) => {
+  console.log("updatePost", req.body);
   try {
     const {
       Title,
@@ -183,38 +203,8 @@ const updatePost = async (req, res) => {
       Balcony_direction,
       Type_apartment,
       maindoor_direction,
+      Images,
     } = req.body;
-
-    const requiredFields = [
-      Title,
-      Price,
-      Description,
-      Address,
-      bedroom,
-      bathroom,
-      yearBuilt,
-      garage,
-      sqft,
-      category,
-      State,
-      Location,
-      Amenities,
-      interior_condition,
-      deposit_amount,
-    ];
-
-    if (
-      requiredFields.some(
-        (field) =>
-          field === undefined ||
-          field === null ||
-          (Array.isArray(field) && field.length === 0)
-      )
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng điền đầy đủ các trường." });
-    }
 
     const checkRole = await Account.findOne({
       PhoneNumber: req.decoded?.PhoneNumber,
@@ -232,11 +222,13 @@ const updatePost = async (req, res) => {
     } catch (err) {
       return res.status(401).json({ error: "Trường Amenities không hợp lệ." });
     }
+
     const { _id } = req.params;
     const oldProperty = await Property.findById(_id);
     if (!oldProperty) {
       return res.status(404).json({ message: "Không tìm thấy bài đăng." });
     }
+
     const property = {
       Title,
       Price,
@@ -257,7 +249,9 @@ const updatePost = async (req, res) => {
         sqft,
         category,
       },
+      Images: Images || oldProperty.Images,
     };
+
     if (category === "Chung cư") {
       if (!Balcony_direction || !Type_apartment || !maindoor_direction) {
         return res.status(401).json({
@@ -269,7 +263,6 @@ const updatePost = async (req, res) => {
       property.Type_apartment = Type_apartment;
     }
 
-    // Xử lý trường hợp đăng bán
     if (State === "Đăng bán") {
       if (!type_documents) {
         return res.status(401).json({
@@ -278,24 +271,6 @@ const updatePost = async (req, res) => {
       }
       property.type_documents = type_documents;
     }
-
-    const files = req.files;
-
-    for (const oldUrl of oldProperty.Images) {
-      const segments = oldUrl.split("/");
-      const fileName = segments[segments.length - 1].split(".")[0];
-      const publicId = `Homez/${fileName}`;
-      await cloudinary.uploader.destroy(publicId);
-    }
-
-    if (!files || files.length < 4 || files.length > 9) {
-      return res.status(401).json({
-        error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
-      });
-    }
-
-    const imageUrls = files.map((file) => file.path);
-    property.Images = imageUrls;
 
     const savedProperty = await Property.findByIdAndUpdate(_id, property, {
       new: true,
@@ -311,6 +286,7 @@ const updatePost = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 const updatePostUser = async (req, res) => {
   try {
     const {
@@ -333,38 +309,8 @@ const updatePostUser = async (req, res) => {
       Balcony_direction,
       Type_apartment,
       maindoor_direction,
+      Images,
     } = req.body;
-
-    const requiredFields = [
-      Title,
-      Price,
-      Description,
-      Address,
-      bedroom,
-      bathroom,
-      yearBuilt,
-      garage,
-      sqft,
-      category,
-      State,
-      Location,
-      Amenities,
-      interior_condition,
-      deposit_amount,
-    ];
-
-    if (
-      requiredFields.some(
-        (field) =>
-          field === undefined ||
-          field === null ||
-          (Array.isArray(field) && field.length === 0)
-      )
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Vui lòng điền đầy đủ các trường." });
-    }
 
     let parsedAmenities;
     try {
@@ -400,6 +346,7 @@ const updatePostUser = async (req, res) => {
         sqft,
         category,
       },
+      Images,
     };
     if (category === "Chung cư") {
       if (!Balcony_direction || !Type_apartment || !maindoor_direction) {
@@ -421,24 +368,6 @@ const updatePostUser = async (req, res) => {
       }
       property.type_documents = type_documents;
     }
-
-    const files = req.files;
-
-    for (const oldUrl of oldProperty.Images) {
-      const segments = oldUrl.split("/");
-      const fileName = segments[segments.length - 1].split(".")[0];
-      const publicId = `Homez/${fileName}`;
-      await cloudinary.uploader.destroy(publicId);
-    }
-
-    if (!files || files.length < 4 || files.length > 9) {
-      return res.status(401).json({
-        error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
-      });
-    }
-
-    const imageUrls = files.map((file) => file.path);
-    property.Images = imageUrls;
 
     const savedProperty = await Property.findByIdAndUpdate(_id, property, {
       new: true,
@@ -525,17 +454,9 @@ const getPropertyDetail = async (req, res) => {
       PhoneNumber: req.decoded?.PhoneNumber,
     });
 
-    if (
-      !checkToken ||
-      (checkToken.Role !== "Admin" && checkToken.Role !== "Staff")
-    ) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
     const posts = await Property.aggregate([
       {
         $match: {
-          Approved: { $ne: true },
           _id: new mongoose.Types.ObjectId(id),
         },
       },

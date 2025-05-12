@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const { createServer } = require("http");
 const { json } = require("body-parser");
 const db = require("./models/db");
+const path = require("path");
 
 const app = express();
 
@@ -19,9 +20,11 @@ app.use(morgan("combined"));
 const allowedOrigins = [
   "http://localhost:8888",
   "http://localhost:3000",
-  "http://localhost:3001",
   "https://homez-fe-oth7.vercel.app",
+  "https://0c87-171-252-188-150.ngrok-free.app",
 ];
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(
   cors({
