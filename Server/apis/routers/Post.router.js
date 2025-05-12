@@ -24,7 +24,7 @@ router.post(
 );
 router.get("/getPropertyAD", checkToken, getPropertyAD);
 router.get("/listings", getProperty);
-router.get("/listings/:id", checkToken, getPropertyDetail);
+router.get("/listings/:id", getPropertyDetail);
 router.get("/listings-state/:id", checkToken, updateStatePost);
 router.delete("/listings-delete/:id", deletePost);
 router.put("/listings-updateAD/:_id", checkToken, updatePost);
