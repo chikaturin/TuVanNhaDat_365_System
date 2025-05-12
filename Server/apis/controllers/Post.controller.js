@@ -11,6 +11,7 @@ const fs = require("fs");
 const path = require("path");
 
 const postContentImage = async (req, res) => {
+  console.log("postContentImage", req.body);
   try {
     const {
       Title,
@@ -30,7 +31,6 @@ const postContentImage = async (req, res) => {
       deposit_amount,
       type_documents,
       Balcony_direction,
-      Type_apartment,
       maindoor_direction,
     } = req.body;
 
@@ -69,6 +69,8 @@ const postContentImage = async (req, res) => {
 
     const files = req.files;
 
+    console.log("files", files);
+
     if (!files || files.length < 4 || files.length > 9) {
       files.forEach((file) => fs.unlinkSync(file.path));
       return res.status(401).json({
@@ -81,14 +83,17 @@ const postContentImage = async (req, res) => {
     for (const file of files) {
       const inputPath = file.path;
       const webpFilename = file.filename.split(".")[0] + ".webp";
-      const outputPath = path.join(path.dirname(inputPath), webpFilename);
+      const outputPath = path.join(
+        path.dirname(inputPath),
+        `webp_${webpFilename}`
+      );
 
       try {
         await sharp(inputPath).webp({ quality: 80 }).toFile(outputPath);
 
         fs.unlinkSync(inputPath);
 
-        imageUrls.push(`${process.env.URL_IMAGES}/${webpFilename}`);
+        imageUrls.push(`${process.env.URL_IMAGES}/${`webp_${webpFilename}`}`);
       } catch (err) {
         console.error("Error converting image to webp:", err);
         return res.status(500).json({ message: "Lỗi chuyển ảnh sang webp" });
@@ -130,14 +135,13 @@ const postContentImage = async (req, res) => {
 
     // Xử lý trường hợp chung cư
     if (category === "Chung cư") {
-      if (!Balcony_direction || !Type_apartment) {
+      if (!Balcony_direction) {
         return res.status(401).json({
           message: "Vui lòng điền đầy đủ các trường cho loại hình chung cư",
         });
       }
       property.maindoor_direction = maindoor_direction;
       property.Balcony_direction = Balcony_direction;
-      property.Type_apartment = Type_apartment;
     }
 
     // Xử lý trường hợp đăng bán
@@ -249,7 +253,7 @@ const updatePost = async (req, res) => {
         sqft,
         category,
       },
-      Images: Images || oldProperty.Images,
+      Images,
     };
 
     if (category === "Chung cư") {
@@ -288,6 +292,7 @@ const updatePost = async (req, res) => {
 };
 
 const updatePostUser = async (req, res) => {
+  console.log("updatePostUser", req.body);
   try {
     const {
       Title,
@@ -538,6 +543,33 @@ const addHighlightTag = async (req, res) => {
   }
 };
 
+const listingPortUser = async (req, res) => {
+  try {
+    const PhoneNumber = req.decoded.PhoneNumber;
+    const posts = await Property.aggregate([
+      { $match: { Account: PhoneNumber } },
+      {
+        $lookup: {
+          from: "accounts",
+          localField: "Account",
+          foreignField: "PhoneNumber",
+          as: "Account",
+        },
+      },
+    ]);
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy bài đăng" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Lấy bài đăng thành công", data: posts });
+  } catch (error) {
+    console.error("Lỗi trong getPropertyAD:", error);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 module.exports = {
   postContentImage,
   getPropertyAD,
@@ -548,4 +580,5 @@ module.exports = {
   updatePost,
   addHighlightTag,
   updatePostUser,
+  listingPortUser,
 };
