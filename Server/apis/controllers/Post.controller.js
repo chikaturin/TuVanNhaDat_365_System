@@ -7,7 +7,8 @@ const sharp = require("sharp");
 const { logAction } = require("../utils/auditlog");
 const getClientIp = (req) =>
   req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
-const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+const path = require("path");
 
 const postContentImage = async (req, res) => {
   try {
@@ -70,12 +71,15 @@ const postContentImage = async (req, res) => {
     const files = req.files;
 
     if (!files || files.length < 4 || files.length > 9) {
+      files.forEach((file) => fs.unlinkSync(file.path));
       return res.status(401).json({
         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
       });
     }
 
-    const imageUrls = files.map((file) => file.path);
+    const imageUrls = files.map((file) => {
+      return `http://localhost:8888/uploads/${file.filename}`;
+    });
 
     let parsedAmenities;
     try {
@@ -270,7 +274,6 @@ const updatePost = async (req, res) => {
       property.Type_apartment = Type_apartment;
     }
 
-    // Xử lý trường hợp đăng bán
     if (State === "Đăng bán") {
       if (!type_documents) {
         return res.status(401).json({
@@ -282,20 +285,16 @@ const updatePost = async (req, res) => {
 
     const files = req.files;
 
-    for (const oldUrl of oldProperty.Images) {
-      const segments = oldUrl.split("/");
-      const fileName = segments[segments.length - 1].split(".")[0];
-      const publicId = `Homez/${fileName}`;
-      await cloudinary.uploader.destroy(publicId);
-    }
-
     if (!files || files.length < 4 || files.length > 9) {
+      files.forEach((file) => fs.unlinkSync(file.path));
       return res.status(401).json({
         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
       });
     }
+    const imageUrls = files.map((file) => {
+      return `http://localhost:8888/uploads/${file.filename}`;
+    });
 
-    const imageUrls = files.map((file) => file.path);
     property.Images = imageUrls;
 
     const savedProperty = await Property.findByIdAndUpdate(_id, property, {
@@ -312,6 +311,7 @@ const updatePost = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 const updatePostUser = async (req, res) => {
   try {
     const {
@@ -425,20 +425,16 @@ const updatePostUser = async (req, res) => {
 
     const files = req.files;
 
-    for (const oldUrl of oldProperty.Images) {
-      const segments = oldUrl.split("/");
-      const fileName = segments[segments.length - 1].split(".")[0];
-      const publicId = `Homez/${fileName}`;
-      await cloudinary.uploader.destroy(publicId);
-    }
-
     if (!files || files.length < 4 || files.length > 9) {
+      files.forEach((file) => fs.unlinkSync(file.path));
       return res.status(401).json({
         error: "Bạn phải upload ít nhất 4 ảnh và không quá 9 ảnh.",
       });
     }
+    const imageUrls = files.map((file) => {
+      return `http://localhost:8888/uploads/${file.filename}`;
+    });
 
-    const imageUrls = files.map((file) => file.path);
     property.Images = imageUrls;
 
     const savedProperty = await Property.findByIdAndUpdate(_id, property, {
