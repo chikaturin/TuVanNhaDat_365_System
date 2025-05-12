@@ -121,7 +121,6 @@ const postContentImage = async (req, res) => {
       Location,
       Amenities: parsedAmenities,
       interior_condition,
-      deposit_amount,
       maindoor_direction,
       Type: {
         bedroom,
@@ -153,6 +152,14 @@ const postContentImage = async (req, res) => {
         });
       }
       property.type_documents = type_documents;
+    }
+    if (State === "Cho thuê") {
+      if (!deposit_amount) {
+        return res.status(401).json({
+          message: "Vui lòng điền đầy đủ các trường cho loại hình cho thuê",
+        });
+      }
+      property.deposit_amount = deposit_amount;
     }
 
     const savedProperty = await property.save();
@@ -211,6 +218,7 @@ const updatePost = async (req, res) => {
       Images,
     } = req.body;
 
+    const { _id } = req.params;
     const checkRole = await Account.findOne({
       PhoneNumber: req.decoded?.PhoneNumber,
     });
@@ -226,12 +234,6 @@ const updatePost = async (req, res) => {
         : JSON.parse(Amenities || "[]");
     } catch (err) {
       return res.status(401).json({ error: "Trường Amenities không hợp lệ." });
-    }
-
-    const { _id } = req.params;
-    const oldProperty = await Property.findById(_id);
-    if (!oldProperty) {
-      return res.status(404).json({ message: "Không tìm thấy bài đăng." });
     }
 
     const property = {
@@ -256,6 +258,46 @@ const updatePost = async (req, res) => {
       },
       Images,
     };
+
+    const files = req.files;
+
+    console.log("files", files);
+    const imageUrls = [];
+
+    if (Array.isArray(Images)) {
+      Images.forEach((url) => {
+        if (!imageUrls.includes(url)) {
+          imageUrls.push(url);
+        }
+      });
+    } else if (typeof Images === "string" && Images.trim() !== "") {
+      if (!imageUrls.includes(Images)) {
+        imageUrls.push(Images);
+      }
+    }
+
+    if (files) {
+      for (const file of files) {
+        const inputPath = file.path;
+        const webpFilename = file.filename.split(".")[0] + ".webp";
+        const outputPath = path.join(
+          path.dirname(inputPath),
+          `webp_${webpFilename}`
+        );
+
+        try {
+          await sharp(inputPath).webp({ quality: 80 }).toFile(outputPath);
+
+          fs.unlinkSync(inputPath);
+
+          imageUrls.push(`${process.env.URL_IMAGES}/${`webp_${webpFilename}`}`);
+        } catch (err) {
+          console.error("Error converting image to webp:", err);
+          return res.status(500).json({ message: "Lỗi chuyển ảnh sang webp" });
+        }
+      }
+    }
+    property.Images = imageUrls;
 
     if (category === "Chung cư") {
       if (!Balcony_direction || !Type_apartment || !maindoor_direction) {
@@ -327,10 +369,6 @@ const updatePostUser = async (req, res) => {
       return res.status(401).json({ error: "Trường Amenities không hợp lệ." });
     }
     const { _id } = req.params;
-    const oldProperty = await Property.findById(_id);
-    if (!oldProperty) {
-      return res.status(404).json({ message: "Không tìm thấy bài đăng." });
-    }
     const property = {
       Title,
       Price,
@@ -365,7 +403,47 @@ const updatePostUser = async (req, res) => {
       property.Type_apartment = Type_apartment;
     }
 
-    // Xử lý trường hợp đăng bán
+    const files = req.files;
+    const imageUrls = [];
+
+    if (Array.isArray(Images)) {
+      Images.forEach((url) => {
+        if (!imageUrls.includes(url)) {
+          imageUrls.push(url);
+        }
+      });
+    } else if (typeof Images === "string" && Images.trim() !== "") {
+      if (!imageUrls.includes(Images)) {
+        imageUrls.push(Images);
+      }
+    }
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const inputPath = file.path;
+        const webpFilename = file.filename.split(".")[0] + ".webp";
+        const outputPath = path.join(
+          path.dirname(inputPath),
+          `webp_${webpFilename}`
+        );
+
+        try {
+          await sharp(inputPath).webp({ quality: 80 }).toFile(outputPath);
+          fs.unlinkSync(inputPath);
+
+          const imageUrl = `${process.env.URL_IMAGES}/webp_${webpFilename}`;
+          if (!imageUrls.includes(imageUrl)) {
+            imageUrls.push(imageUrl);
+          }
+        } catch (err) {
+          console.error("Error converting image to webp:", err);
+          return res.status(500).json({ message: "Lỗi chuyển ảnh sang webp" });
+        }
+      }
+    }
+
+    property.Images = imageUrls;
+
     if (State === "Đăng bán") {
       if (!type_documents) {
         return res.status(401).json({
