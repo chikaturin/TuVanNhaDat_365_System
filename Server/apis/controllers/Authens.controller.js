@@ -414,13 +414,19 @@ const BlockAccount = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { PhoneNumber } = req.decoded.PhoneNumber;
-    const { FirstName, LastName, Email, Password } = req.body;
+    const { FirstName, LastName, Email, Password, NewPassword } = req.body;
 
     const user = await Account.findOne({ PhoneNumber });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const hashedPassword = await bcrypt.hash(Password, 10);
+
+    const isPasswordCorrect = await bcrypt.compare(Password, user.Password);
+    if (!isPasswordCorrect) {
+      return res.status(402).json({ message: "Sai mật khẩu" });
+    }
+
+    const hashedPassword = await bcrypt.hash(NewPassword, 10);
 
     user.FirstName = FirstName || user.FirstName;
     user.LastName = LastName || user.LastName;

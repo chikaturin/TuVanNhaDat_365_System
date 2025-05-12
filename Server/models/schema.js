@@ -150,9 +150,6 @@ const propertySchema = new mongoose.Schema({
   Balcony_direction: {
     type: String,
   },
-  Type_apartment: {
-    type: String,
-  },
   interior_condition: {
     type: String,
     required: true,
