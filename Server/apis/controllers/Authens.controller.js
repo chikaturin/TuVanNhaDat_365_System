@@ -237,10 +237,6 @@ const listUser = async (req, res) => {
 //Tìm kiếm user
 const search_User = async (req, res) => {
   try {
-    const admin = req.decoded?.Role;
-    if (!admin) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
     const { PhoneNumber } = req.params;
 
     const user = await Account.findOne({
@@ -413,7 +409,7 @@ const BlockAccount = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const { PhoneNumber } = req.decoded.PhoneNumber;
+    const { PhoneNumber } = req.params;
     const { FirstName, LastName, Email, Password, NewPassword } = req.body;
 
     const user = await Account.findOne({ PhoneNumber });
@@ -421,24 +417,26 @@ const updateUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(Password, user.Password);
-    if (!isPasswordCorrect) {
-      return res.status(402).json({ message: "Sai mật khẩu" });
-    }
-
-    const hashedPassword = await bcrypt.hash(NewPassword, 10);
-
     user.FirstName = FirstName || user.FirstName;
     user.LastName = LastName || user.LastName;
     user.Email = Email || user.Email;
-    user.Password = hashedPassword || user.Password;
+
+    if (Password && NewPassword) {
+      const isPasswordCorrect = await bcrypt.compare(Password, user.Password);
+      if (!isPasswordCorrect) {
+        return res.status(402).json({ message: "Sai mật khẩu" });
+      }
+
+      const hashedPassword = await bcrypt.hash(NewPassword, 10);
+      user.Password = hashedPassword;
+    }
 
     await user.save();
 
-    return res.status(200).json({ message: "User updated successfully", user });
+    return res.status(200).json({ message: "Cập nhật thành công", user });
   } catch (error) {
     console.error("Error updating user:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Lỗi server" });
   }
 };
 
