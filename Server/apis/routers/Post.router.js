@@ -27,12 +27,8 @@ router.get("/listings", getProperty);
 router.get("/listings/:id", checkToken, getPropertyDetail);
 router.get("/listings-state/:id", checkToken, updateStatePost);
 router.delete("/listings-delete/:id", deletePost);
-router.put(
-  "/listings-updateAD/:_id",
-  uploadLocal.array("images", 9),
-  checkToken,
-  updatePost
-);
+router.put("/listings-updateAD/:_id", checkToken, updatePost);
+router.put("/listings-update/:_id", checkToken, updatePostUser);
 
 router.put("/addHighlightTag/:_id", checkToken, addHighlightTag);
 
