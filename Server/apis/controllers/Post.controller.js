@@ -354,7 +354,6 @@ const updatePostUser = async (req, res) => {
       deposit_amount,
       type_documents,
       Balcony_direction,
-      Type_apartment,
       maindoor_direction,
       Images,
     } = req.body;
@@ -399,8 +398,9 @@ const updatePostUser = async (req, res) => {
       }
       property.maindoor_direction = maindoor_direction;
       property.Balcony_direction = Balcony_direction;
-      property.Type_apartment = Type_apartment;
     }
+
+    property.Approved = false;
 
     const files = req.files;
     const imageUrls = [];
