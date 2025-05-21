@@ -37,7 +37,7 @@ router.get(
   BlockAccount
 );
 router.get("/exportUser", validateApiKey, checkToken, exportUser);
-router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
+// router.get("/resetOTP/:PhoneNumber", validateApiKey, checkToken, resetOTP);
 
 router.get("/me", me);
 router.get("/logout", logout);

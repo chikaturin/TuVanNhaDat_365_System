@@ -1,16 +1,49 @@
 const { Contact, Account } = require("../../models/schema");
+const nodemailer = require("nodemailer");
+const dotenv = require("dotenv");
+dotenv.config();
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.PASSAPP,
+  },
+});
+
+// Cấu hình nội dung email
+const mailOptions = (post) => ({
+  from: process.env.EMAIL,
+  to: process.env.MYEMAIL,
+  subject: "Yêu cầu liên hệ từ người dùng NekoHome",
+  text: `Có yêu cầu liên hệ từ người dùng NekoHome hãy kiểm tra`,
+  html: `
+  <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333;">
+    <p>
+      Có người dùng từ NekoHome đã gửi 
+      ${
+        post === "NO"
+          ? "<strong>EMAIL cần liên hệ</strong>"
+          : `liên hệ về bài đăng: 
+              <a href="https://nekohome.vn/property-detail/${post}" target="_blank" 
+                 style="color: #1a73e8; text-decoration: none;">
+                Xem Bài Đăng
+              </a>`
+      }
+    </p>
+  </div>
+`,
+});
 
 const sendContact = async (req, res) => {
   try {
     const { name, phone, post, typeofPost, email, message } = req.body;
 
     const existingRequest = await Contact.find({
-      post: post,
       email: email,
-      name: name,
       phone: phone,
     });
-    if (existingRequest.length > 0) {
+    if (existingRequest.length > 5) {
       return res
         .status(401)
         .json({ message: "Bạn đã gửi yêu cầu về bài đăng này rồi" });
@@ -34,7 +67,9 @@ const sendContact = async (req, res) => {
       message,
     });
 
+    await transporter.sendMail(mailOptions(post || "NO"));
     await newRequest.save();
+
     return res.status(200).json({ message: "Yêu cầu đã được gửi thành công" });
   } catch (err) {
     console.error(err);
