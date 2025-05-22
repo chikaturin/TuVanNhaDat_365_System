@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Cấu hình nội dung email
-const mailOptions = (post) => ({
+const mailOptions = (post, email) => ({
   from: process.env.EMAIL,
   to: process.env.MYEMAIL,
   subject: "Yêu cầu liên hệ từ người dùng NekoHome",
@@ -20,11 +20,11 @@ const mailOptions = (post) => ({
   html: `
   <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333;">
     <p>
-      Có người dùng từ NekoHome đã gửi 
+      Có người dùng email là <strong>${email}</strong> đã từ NekoHome gửi 
       ${
         post === "NO"
           ? "<strong>EMAIL cần liên hệ</strong>"
-          : `liên hệ về bài đăng: 
+          : `liên hệ về bài đăng : 
               <a href="https://nekohome.vn/property-detail/${post}" target="_blank" 
                  style="color: #1a73e8; text-decoration: none;">
                 Xem Bài Đăng
@@ -67,7 +67,7 @@ const sendContact = async (req, res) => {
       message,
     });
 
-    await transporter.sendMail(mailOptions(post || "NO"));
+    await transporter.sendMail(mailOptions(post, email || "NO", email));
     await newRequest.save();
 
     return res.status(200).json({ message: "Yêu cầu đã được gửi thành công" });
